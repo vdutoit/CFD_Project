@@ -79,6 +79,24 @@ void d2vdy2_fun(double** v, double** sol, double h, int N, int M) //IDEM QUE POU
     }
 }
 
+void d2Tdx2_fun(double** T, double** sol, double h, int N, int M)
+{
+    for (int i = 0; i<M; i++)
+    {
+        for (int j = 0; j<N; j++)
+        sol[i][j] = (T[i+2][j+1]-2*T[i+1][j+1]+T[i][j+1])/pow(h,2);
+    }
+}
+
+void d2Tdy2_fun(double** T, double** sol, double h, int N, int M)
+{
+    for (int i = 0; i<M; i++)
+    {
+        for (int j = 0; j<N; j++)
+        sol[i][j] = (T[i+1][j+2]-2*T[i+1][j+1]+T[i+1][j])/pow(h,2);
+    }
+}
+
 void AdvectiveX_fun(double** u, double** v, double** a, double h, int N, int M)
 {
     //u est M+1xN+2 , v est M+2xN+1, a est M-1xN avec M et N le nombre de points dans le domaine frontiere comprise
@@ -272,5 +290,3 @@ void Div_star_fun(double** ustar, double** vstar, double** sol, double h, int M,
     free(dudx);
     free(dvdy);
 }
-
-
