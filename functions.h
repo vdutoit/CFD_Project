@@ -1,0 +1,18 @@
+//Finite differences
+void dPdx_fun(double** P, double** sol, double h, int N, int M);
+void dPdy_fun(double** P, double** sol, double h, int N, int M);
+void d2udx2_fun(double** u, double** sol, double h, int N, int M);
+void d2udy2_fun(double** u, double** sol, double h, int N, int M);
+void d2vdx2_fun(double** v, double** sol, double h, int N, int M); //IDEM QUE POUR U A SUPPRIMER
+void d2vdy2_fun(double** v, double** sol, double h, int N, int M); //IDEM QUE POUR U A SUPPRIMER
+void AdvectiveX_fun(double** u, double** v, double** a, double h, int N, int M);
+void AdvectiveY_fun(double** u, double** v, double** b, double h, int N, int M);
+void AB2X_fun(double** a_old, double** a_now, double** sol, int M, int N);
+void AB2Y_fun(double** b_old, double** b_now, double** sol, int M, int N);
+void dudx_fun(double** u, double** sol, double h, int M, int N);
+void dvdy_fun(double** v, double** sol, double h, int M, int N);
+void Div_star_fun(double** ustar, double** vstar, double** sol, double h, int M, int N); //vraiment utile ? je pense pas autant faire direct dudx + dvdy
+
+//Solvers
+void ustar_Solve(double** u, double** a_old, double** a_now, double** P, double** sol, double h, double dt, double nu, int M, int N); //AJOUTER TEMPERATURE
+void vstar_Solve(double** v, double** b_old, double** b_now, double** P, double** sol, double h, double dt, double nu, int M, int N);//AJOUTER TEMPERATURE
