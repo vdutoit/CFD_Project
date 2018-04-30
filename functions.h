@@ -20,5 +20,5 @@ void AdvectiveT_fun(double** T, double** u, double** v, double** H, double h, in
 //Solvers
 void ustar_Solve(double** u, double** v, double** adv, double** P, double** sol, double h, double dt, double nu, int M, int N);
 void vstar_Solve(double** u, double** v, double** adv, double** P, double** T, double** sol, double h, double dt, double T0, double nu, double beta, int M, int N); //AJOUTER TEMPERATURE
-void T_solve(double** T, double** H, double** sol, double h, double dt, double alpha, int M, int N);
+void T_solve(double** T, double** H, double** sol, double h, double dt, double q_w, double T_inf, double h_barre, double k, double alpha, int M, int N);
 
