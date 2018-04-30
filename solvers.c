@@ -148,8 +148,11 @@ void T_solve(double** T,  double q_e, double q_w, double** u, double** v, double
 
     for (int i = 0; i<M; i++)
     {
-        sol[i+1][0] = 
+        sol[i+1][0] = sol[i+1][1] - h*dTdy_w;
+        sol[i+1][N+1] = sol[i+1][N] + h*dTdy_e;
     }
+
+    
 
 
 
