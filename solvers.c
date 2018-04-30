@@ -112,3 +112,28 @@ void vstar_Solve(double** v, double** b_old, double** b_now, double** P, double*
     free(d2vdx2);
     free(d2vdy2);
 }
+
+void T_solve(double** T,  double** u, double** v, double** sol, double h, double dt, double alpha, int M, int N)
+{
+    double** d2Tdx2  = calloc(M, sizeof( double *));
+    for (int k = 0; k<M; k++)
+    {
+        d2Tdx2[k] = calloc(N,sizeof(double));
+    }
+
+    double** d2Tdy2  = calloc(M, sizeof( double *));
+    for (int k = 0; k<M; k++)
+    {
+        d2Tdy2[k] = calloc(N,sizeof(double));
+    }
+    d2Tdx2_fun(T, d2Tdx2, h, N, M)
+    d2Tdy2_fun(T, d2Tdy2, h, N, M)
+
+    for (int i = 0; i<M; i++)
+    {
+        for (int j = 0; j<N; j++)
+        {
+            sol[i+1][j+1] = T[i+1][j+1] + dt * ( - + alpha * (d2Tdx2[i][j] + d2Tdy2[i][j])); // + terme temperature
+        }
+    }
+}
