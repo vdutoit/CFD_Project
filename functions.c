@@ -164,7 +164,8 @@ void AdvectiveY_fun(double** u, double** v, double** b, double h, int N, int M)
         for (int j=0; j<N; j++)
         {
             //b[0][0] est place en (1,1.5)
-            b[i][j] = 0.5 *(Vij[i][j+1] * (v[i+1][j+2]-v[i+1][j+1])/h + Vij[i][j] * (v[i+1][j+1]-v[i+1][j])/h) + 0.5 *(Uij[i+1][j] * (v[i+2][j+1]-v[i+1][j+1])/h + Uij[i][j] * (v[i+1][j+1]-v[i][j+1])/h);
+            b[i][j] = 0.5 *(Vij[i][j+1] * (v[i+1][j+2]-v[i+1][j+1])/h + Vij[i][j] * (v[i+1][j+1]-v[i+1][j])/h)
+                    + 0.5 *(Uij[i+1][j] * (v[i+2][j+1]-v[i+1][j+1])/h + Uij[i][j] * (v[i+1][j+1]-v[i][j+1])/h);
         }
     }
 
@@ -172,6 +173,20 @@ void AdvectiveY_fun(double** u, double** v, double** b, double h, int N, int M)
     free(Vij);
 
 }
+
+    AdvectiveT_fun(double** T, double** u, double** v, double** H, double h, int M, int N)
+    {
+        //T est M+2xN+2, u est M+1xN+2, v est M+2xN+1, H est MxN
+
+        for (int i=0; i<M; i++)
+        {
+            for (int j=0; j<N, j++ )
+            {
+                H[i][j] = 0.5*(u[i][j+1]*(T[i+1][j+1]-T[i][j+1])/h + u[i+1][j+1]*(T[i+2][j+1]-T[i+1][j+1])/h)
+                        + 0.5*(v[i+1][j]*(T[i+1][j+1]-T[i+1][j])/h + v[i+1][j+1]*(T[i+1][j+2]-T[i+1][j+1])/h);
+            }
+        }
+    }
 
 void AB2X_fun(double** a_old, double** a_now, double** sol, int M, int N)
 {
