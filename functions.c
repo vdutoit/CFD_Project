@@ -84,7 +84,7 @@ void d2Tdx2_fun(double** T, double** sol, double h, int N, int M)
     for (int i = 0; i<M; i++)
     {
         for (int j = 0; j<N; j++)
-        sol[i][j] = (T[i+2][j+1]-2*T[i+1][j+1]+T[i][j+1])/pow(h,2);
+            sol[i][j] = (T[i+2][j+1]-2*T[i+1][j+1]+T[i][j+1])/pow(h,2);
     }
 }
 
@@ -93,7 +93,7 @@ void d2Tdy2_fun(double** T, double** sol, double h, int N, int M)
     for (int i = 0; i<M; i++)
     {
         for (int j = 0; j<N; j++)
-        sol[i][j] = (T[i+1][j+2]-2*T[i+1][j+1]+T[i+1][j])/pow(h,2);
+            sol[i][j] = (T[i+1][j+2]-2*T[i+1][j+1]+T[i+1][j])/pow(h,2);
     }
 }
 
@@ -183,7 +183,7 @@ void AdvectiveY_fun(double** u, double** v, double** b, double h, int N, int M)
         {
             //b[0][0] est place en (1,1.5)
             b[i][j] = 0.5 *(Vij[i][j+1] * (v[i+1][j+2]-v[i+1][j+1])/h + Vij[i][j] * (v[i+1][j+1]-v[i+1][j])/h)
-                    + 0.5 *(Uij[i+1][j] * (v[i+2][j+1]-v[i+1][j+1])/h + Uij[i][j] * (v[i+1][j+1]-v[i][j+1])/h);
+                      + 0.5 *(Uij[i+1][j] * (v[i+2][j+1]-v[i+1][j+1])/h + Uij[i][j] * (v[i+1][j+1]-v[i][j+1])/h);
         }
     }
 
@@ -192,19 +192,19 @@ void AdvectiveY_fun(double** u, double** v, double** b, double h, int N, int M)
 
 }
 
-    AdvectiveT_fun(double** T, double** u, double** v, double** H, double h, int M, int N)
-    {
-        //T est M+2xN+2, u est M+1xN+2, v est M+2xN+1, H est MxN
+AdvectiveT_fun(double** T, double** u, double** v, double** H, double h, int M, int N)
+{
+    //T est M+2xN+2, u est M+1xN+2, v est M+2xN+1, H est MxN
 
-        for (int i=0; i<M; i++)
+    for (int i=0; i<M; i++)
+    {
+        for (int j=0; j<N; j++ )
         {
-            for (int j=0; j<N, j++ )
-            {
-                H[i][j] = 0.5*(u[i][j+1]*(T[i+1][j+1]-T[i][j+1])/h + u[i+1][j+1]*(T[i+2][j+1]-T[i+1][j+1])/h)
-                        + 0.5*(v[i+1][j]*(T[i+1][j+1]-T[i+1][j])/h + v[i+1][j+1]*(T[i+1][j+2]-T[i+1][j+1])/h);
-            }
+            H[i][j] = 0.5*(u[i][j+1]*(T[i+1][j+1]-T[i][j+1])/h + u[i+1][j+1]*(T[i+2][j+1]-T[i+1][j+1])/h)
+                      + 0.5*(v[i+1][j]*(T[i+1][j+1]-T[i+1][j])/h + v[i+1][j+1]*(T[i+1][j+2]-T[i+1][j+1])/h);
         }
     }
+}
 
 void AB2X_fun(double** a_old, double** a_now, double** sol, int M, int N)
 {
@@ -228,6 +228,19 @@ void AB2Y_fun(double** b_old, double** b_now, double** sol, int M, int N)
         for(int j = 0; j<N-1; j++)
         {
             sol[i][j] = 1.5*b_now[i][j] - 0.5*b_old[i][j];
+        }
+    }
+}
+
+void AB2T_fun(double** H_old, double** H_now, double** sol, int M, int N)
+{
+    //H_old, H_now et sol sont MxN
+
+    for (int i = 0; i<M; i++)
+    {
+        for(int j = 0; j<N; j++)
+        {
+            sol[i][j] = 1.5*H_now[i][j] - 0.5*H_old[i][j];
         }
     }
 }
@@ -261,32 +274,32 @@ void dvdy_fun(double** v, double** sol, double h, int M, int N)
     }
 }
 
-void Div_star_fun(double** ustar, double** vstar, double** sol, double h, int M, int N) //vraiment utile ? je pense pas autant faire direct dudx + dvdy
-{
-    //ustar est M+1xN+2, vstar est M+2xN+1, sol est MxN
-    double** dudx  = calloc(M, sizeof( double *));
-    for (int k = 0; k<M; k++)
-    {
-        dudx[k] = calloc(N,sizeof(double));
-    }
-
-    double** dvdy = calloc(M, sizeof( double *));
-    for (int k = 0; k<M; k++)
-    {
-        dvdy[k] = calloc(N,sizeof(double));
-    }
-
-    dudx_fun(ustar,dudx,h,M,N);
-    dvdy_fun(vstar,dvdy,h,M,N);
-
-    for (int i = 0; i<M; i++)
-    {
-        for (int j = 0; j<N; j++)
-        {
-            sol[i][j] = dudx[i][j] + dvdy[i][j];
-        }
-    }
-
-    free(dudx);
-    free(dvdy);
-}
+//void Div_star_fun(double** ustar, double** vstar, double** sol, double h, int M, int N) //vraiment utile ? je pense pas autant faire direct dudx + dvdy
+//{
+//    //ustar est M+1xN+2, vstar est M+2xN+1, sol est MxN
+//    double** dudx  = calloc(M, sizeof( double *));
+//    for (int k = 0; k<M; k++)
+//    {
+//        dudx[k] = calloc(N,sizeof(double));
+//    }
+//
+//    double** dvdy = calloc(M, sizeof( double *));
+//    for (int k = 0; k<M; k++)
+//    {
+//        dvdy[k] = calloc(N,sizeof(double));
+//    }
+//
+//    dudx_fun(ustar,dudx,h,M,N);
+//    dvdy_fun(vstar,dvdy,h,M,N);
+//
+//    for (int i = 0; i<M; i++)
+//    {
+//        for (int j = 0; j<N; j++)
+//        {
+//            sol[i][j] = dudx[i][j] + dvdy[i][j];
+//        }
+//    }
+//
+//    free(dudx);
+//    free(dvdy);
+//}

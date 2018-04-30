@@ -21,3 +21,25 @@
 	"thomas.h"
 	"functions.h"
 
+1525130559 source:c:\users\user\documents\gitkraken\lmeca2660_project2018\main.c
+	<stdio.h>
+	<stdlib.h>
+	<math.h>
+	"functions.h"
+
+1525131996 c:\users\user\documents\gitkraken\lmeca2660_project2018\functions.h
+
+1525131298 source:c:\users\user\documents\gitkraken\lmeca2660_project2018\functions.c
+	<stdio.h>
+	<math.h>
+	"thomas.h"
+	"functions.h"
+
+1524442888 c:\users\user\documents\gitkraken\lmeca2660_project2018\thomas.h
+
+1525130720 source:c:\users\user\documents\gitkraken\lmeca2660_project2018\solvers.c
+	<stdio.h>
+	<math.h>
+	"thomas.h"
+	"functions.h"
+

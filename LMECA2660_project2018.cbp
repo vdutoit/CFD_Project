@@ -31,10 +31,17 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Unit filename="functions.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="functions.h" />
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="solvers.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="thomas.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />
