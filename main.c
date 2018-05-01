@@ -10,7 +10,7 @@ int main (int argc, char *argv[])
 {
     int M = 2;
     int N = 3;
-    double h = 1.0;
+    double h = 1;
     double** a = calloc(M-1, sizeof(double));
         for (int k = 0; k<M-1; k++)
         {
@@ -58,12 +58,13 @@ int main (int argc, char *argv[])
 
     u[0][1] = 4;
     u[1][1] = 1;
-    u[2][1] = 0;
+    u[2][1] = 2;
 
-    AdvectiveX_fun(u,v,a,h,N,M);
-
-    printf("a00 = %f",a[0][0]);
-
+    AdvectiveX_fun(u,v,a,h,M,N);
+    double m = 2;
+    double n = 1.3;
+    printf("a00 = %f \n",a[0][0]);
+    printf("testmax = %f",fmax(m,n));
     free(a);
     free(u);
     free(v);

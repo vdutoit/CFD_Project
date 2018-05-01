@@ -27,9 +27,9 @@ void ustar_Solve(double** u, double** v, double** adv, double** P, double** sol,
         d2udy2[k] = calloc(N,sizeof(double));
     }
 
-    dPdx_fun(P,dPdx,h,N,M);
-    d2udx2_fun(u,d2udx2,h,N,M);
-    d2udy2_fun(u,d2udy2,h,N,M);
+    dPdx_fun(P,dPdx,h,M,N);
+    d2udx2_fun(u,d2udx2,h,M,N);
+    d2udy2_fun(u,d2udy2,h,M,N);
 
     for (int i = 0; i<M-1; i++)
     {
@@ -74,9 +74,9 @@ void vstar_Solve(double** u, double** v, double** adv, double** P, double** T, d
         d2vdy2[k] = calloc(N-1,sizeof(double));
     }
 
-    dPdy_fun(P,dPdy,h,N,M);
-    d2vdx2_fun(v,d2vdx2,h,N,M);
-    d2vdy2_fun(v,d2vdy2,h,N,M);
+    dPdy_fun(P,dPdy,h,M,N);
+    d2vdx2_fun(v,d2vdx2,h,M,N);
+    d2vdy2_fun(v,d2vdy2,h,M,N);
 
     for (int i = 0; i<M; i++)
     {
@@ -99,10 +99,10 @@ void vstar_Solve(double** u, double** v, double** adv, double** P, double** T, d
     free(d2vdy2);
 }
 
-void T_solve(double** T, double** H, double** sol, double h, double dt, double q_w, double T_inf, double h_barre, double k, double alpha, int M, int N)
+void T_solve(double** T, double** H, double h, double dt, double q_w, double T_inf, double h_barre, double k, double alpha, int M, int N)
 {
     //T est M+2xN+2, H est MxN, deja assemble avec AB2 ou euler, sol est M+2xN+2
-
+    // on a vraiment besoin d un vecteur sol ? pourquoi ne pas directement overwrite T
     double** d2Tdx2  = calloc(M, sizeof( double *));
     for (int k = 0; k<M; k++)
     {
@@ -117,23 +117,10 @@ void T_solve(double** T, double** H, double** sol, double h, double dt, double q
 
     double* dTdy_e  = calloc(M, sizeof(double));
 
-    d2Tdx2_fun(T, d2Tdx2, h, N, M);
-    d2Tdy2_fun(T, d2Tdy2, h, N, M);
+    d2Tdx2_fun(T, d2Tdx2, h, M, N);
+    d2Tdy2_fun(T, d2Tdy2, h, M, N);
 
-    for (int i = 0; i<M; i++)
-    {
-        for (int j = 0; j<N; j++)
-        {
-            sol[i+1][j+1] = T[i+1][j+1] + dt * ( -1 * H[i][j] + alpha * (d2Tdx2[i][j] + d2Tdy2[i][j]));
-        }
-    }
-
-    for (int i = 0; i<N; i++)
-    {
-        sol[0][i+1] = sol[1][i+1];
-        sol[M+1][i+1] = sol[M][i+1];
-    }
-
+    //calculer dTdy_e avec les T au temps n ou n+1 ?
     double q_e = 0;
     for (int i=1;1<M+1;i++)
     {
@@ -141,15 +128,92 @@ void T_solve(double** T, double** H, double** sol, double h, double dt, double q
         dTdy_e[i-1] = -q_e/k;
     }
 
+    for (int i = 0; i<M; i++)
+    {
+        for (int j = 0; j<N; j++)
+        {
+            T[i+1][j+1] = T[i+1][j+1] + dt * ( -1 * H[i][j] + alpha * (d2Tdx2[i][j] + d2Tdy2[i][j]));
+        }
+    }
+
+    for (int i = 0; i<N; i++)
+    {
+        T[0][i+1] = T[1][i+1];
+        T[M+1][i+1] = T[M][i+1];
+    }
+
     double dTdy_w = -q_w/k;
+//    double q_e = 0;
+//    for (int i=1;1<M+1;i++)
+//    {
+//        q_e = h_barre*((T[i][N+1]-T[i][N])/2 - T_inf);
+//        dTdy_e[i-1] = -q_e/k;
+//    }
 
     for (int i = 0; i<M; i++)
     {
-        sol[i+1][0] = sol[i+1][1] - h*dTdy_w;
-        sol[i+1][N+1] = sol[i+1][N] + h*dTdy_e[i];
+        T[i+1][0] = T[i+1][1] - h*dTdy_w;
+        T[i+1][N+1] = T[i+1][N] + h*dTdy_e[i];
     }
 
     free(d2Tdy2);
     free(d2Tdx2);
+    free(dTdy_e);
+}
 
+void SOR(double** phi, double** ustar, double** vstar, double tol, double alpha, double h, double dt, int M, int N)
+{
+    double** phiStar  = calloc(M, sizeof( double *));
+    for (int k = 0; k<M; k++)
+    {
+        phiStar[k] = calloc(N,sizeof(double));
+    }
+    double** dustardx  = calloc(M, sizeof( double *));
+    for (int k = 0; k<M; k++)
+    {
+        dustardx[k] = calloc(N,sizeof(double));
+    }
+    double** dvstardy  = calloc(M, sizeof( double *));
+    for (int k = 0; k<M; k++)
+    {
+        dvstardy[k] = calloc(N,sizeof(double));
+    }
+    double conv = 1.0;
+    double phi_last = 0;
+
+    dudx_fun(ustar,dustardx,h,M,N);
+    dvdy_fun(vstar,dvstardy,h,M,N);
+
+    while (conv > tol)
+    {
+        conv = 0;
+        for (int j=0; j<N; j++)
+        {
+            for (int i=0; i<M; i++)
+            {
+                phiStar[i][j] = 1/4 * (-1* pow(h,2)*(dustardx[i][j]+dvstardy[i][j])/dt + phi[i+2][j+1] + phi[i][j+1] + phi[i+1][j+2] + phi[i+1][j]);
+                phi_last = phi[i+1][j+1];
+                phi[i+1][j+1] = alpha*phiStar[i][j] + (1-alpha) * phi[i+1][j+1]; //remplacer phistar direct ?
+                conv = fmax(fabs(phi[i+1][j+1]-phi_last),conv);
+            }
+            phi[0][j+1] = phi[1][j+1];
+            phi[M+1][j+1] = phi[M][j+1];
+        }
+        for (int i=0; i<M; i++)
+        {
+            phi[i+1][0] = phi[i+1][1];
+            phi[i+1][N+1] = phi[i+1][N];
+        }
+    }
+}
+
+void u_Solve(double** ustar, double** phi, double** sol, double dt, double h,int M, int N)
+{
+    double** dphidx  = calloc(M-1, sizeof( double *));
+    for (int k = 0; k<M-1; k++)
+    {
+        dphidx[k] = calloc(N,sizeof(double));
+    }
+
+    dPdx_fun(phi,dphidx,h,M,N);
 }

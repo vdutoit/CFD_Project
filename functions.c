@@ -2,12 +2,11 @@
 //MECA2660_PROJECT_2018
 #include<stdio.h>
 #include<math.h>
-#include"thomas.h"
 #include"functions.h"
 
 //TRIER FONCTIONS DANS PLUSIEURS DOSSIERS + FAIRE HEADER
 
-void dPdx_fun(double** P, double** sol, double h, int N, int M)
+void dPdx_fun(double** P, double** sol, double h, int M, int N)
 {
     //P est M+2xN+2, sol est de dim M-1xN (positionne sur les u) avec M et N le nombre de points dans le domaine frontiere comprise
     for (int j = 0; j<N; j++)
@@ -19,7 +18,7 @@ void dPdx_fun(double** P, double** sol, double h, int N, int M)
     }
 }
 
-void dPdy_fun(double** P, double** sol, double h, int N, int M)
+void dPdy_fun(double** P, double** sol, double h, int M, int N)
 {
     //P est M+2xN+2, sol est de dim MxN-1 (positionne sur les v) avec M et N le nombre de points dans le domaine frontiere comprise
     for (int i = 0; i<M; i++)
@@ -31,7 +30,7 @@ void dPdy_fun(double** P, double** sol, double h, int N, int M)
     }
 }
 
-void d2udx2_fun(double** u, double** sol, double h, int N, int M)
+void d2udx2_fun(double** u, double** sol, double h, int M, int N)
 {
     //u est M+1xN+2, sol est de dim M-1xN avec M et N le nombre de points dans le domaine frontiere comprise
     for (int j = 0; j<N; j++)
@@ -43,7 +42,7 @@ void d2udx2_fun(double** u, double** sol, double h, int N, int M)
     }
 }
 
-void d2udy2_fun(double** u, double** sol, double h, int N, int M)
+void d2udy2_fun(double** u, double** sol, double h, int M, int N)
 {
     //u est M+1xN+2, sol est de dim M-1xN avec M et N le nombre de points dans le domaine frontiere comprise
     for (int i = 0; i<M-1; i++)
@@ -55,7 +54,7 @@ void d2udy2_fun(double** u, double** sol, double h, int N, int M)
     }
 }
 
-void d2vdx2_fun(double** v, double** sol, double h, int N, int M) //IDEM QUE POUR U A SUPPRIMER
+void d2vdx2_fun(double** v, double** sol, double h, int M, int N) //IDEM QUE POUR U A SUPPRIMER
 {
     //v est M+2xN+1, sol est de dim MxN-1 avec M et N le nombre de points dans le domaine frontiere comprise
     for (int j = 0; j<N-1; j++)
@@ -67,7 +66,7 @@ void d2vdx2_fun(double** v, double** sol, double h, int N, int M) //IDEM QUE POU
     }
 }
 
-void d2vdy2_fun(double** v, double** sol, double h, int N, int M) //IDEM QUE POUR U A SUPPRIMER
+void d2vdy2_fun(double** v, double** sol, double h, int M, int N) //IDEM QUE POUR U A SUPPRIMER
 {
     //v est M+2xN+1, sol est de dim MxN-1 avec M et N le nombre de points dans le domaine frontiere comprise
     for (int i = 0; i<M; i++)
@@ -79,7 +78,7 @@ void d2vdy2_fun(double** v, double** sol, double h, int N, int M) //IDEM QUE POU
     }
 }
 
-void d2Tdx2_fun(double** T, double** sol, double h, int N, int M)
+void d2Tdx2_fun(double** T, double** sol, double h, int M, int N)
 {
     for (int i = 0; i<M; i++)
     {
@@ -88,7 +87,7 @@ void d2Tdx2_fun(double** T, double** sol, double h, int N, int M)
     }
 }
 
-void d2Tdy2_fun(double** T, double** sol, double h, int N, int M)
+void d2Tdy2_fun(double** T, double** sol, double h, int M, int N)
 {
     for (int i = 0; i<M; i++)
     {
@@ -97,7 +96,7 @@ void d2Tdy2_fun(double** T, double** sol, double h, int N, int M)
     }
 }
 
-void AdvectiveX_fun(double** u, double** v, double** a, double h, int N, int M)
+void AdvectiveX_fun(double** u, double** v, double** a, double h, int M, int N)
 {
     //u est M+1xN+2 , v est M+2xN+1, a est M-1xN avec M et N le nombre de points dans le domaine frontiere comprise
 
@@ -144,7 +143,7 @@ void AdvectiveX_fun(double** u, double** v, double** a, double h, int N, int M)
 
 }
 
-void AdvectiveY_fun(double** u, double** v, double** b, double h, int N, int M)
+void AdvectiveY_fun(double** u, double** v, double** b, double h, int M, int N)
 {
     //u est M+1xN+2 , v est M+2xN+1, b est MxN-1 avec M et N le nombre de points dans le domaine frontiere comprise
 
