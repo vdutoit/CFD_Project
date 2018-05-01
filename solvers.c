@@ -161,7 +161,7 @@ void T_solve(double** T, double** H, double h, double dt, double q_w, double T_i
     free(dTdy_e);
 }
 
-void SOR(double** phi, double** ustar, double** vstar, double tol, double alpha, double h, double dt, int M, int N)
+void SOR(double** phi, double** ustar, double** vstar, double tol, double alpha, double H, double U, double L, double h, double dt, int M, int N)
 {
     double** phiStar  = calloc(M, sizeof( double *));
     for (int k = 0; k<M; k++)
@@ -178,33 +178,62 @@ void SOR(double** phi, double** ustar, double** vstar, double tol, double alpha,
     {
         dvstardy[k] = calloc(N,sizeof(double));
     }
-    double conv = 1.0;
-    double phi_last = 0;
+    double** d2phidx2  = calloc(M, sizeof( double *));
+    for (int k = 0; k<M; k++)
+    {
+        d2phidx2[k] = calloc(N,sizeof(double));
+    }
+    double** d2phidy2  = calloc(M, sizeof( double *));
+    for (int k = 0; k<M; k++)
+    {
+        d2phidy2[k] = calloc(N,sizeof(double));
+    }
+    double R = 0;
+    double sumR = 0;
+    double error = 1;
 
     dudx_fun(ustar,dustardx,h,M,N);
     dvdy_fun(vstar,dvstardy,h,M,N);
 
-    while (conv > tol)
+    while (error > tol)
     {
-        conv = 0;
+        sumR = 0;
         for (int j=0; j<N; j++)
         {
             for (int i=0; i<M; i++)
             {
                 phiStar[i][j] = 1/4 * (-1* pow(h,2)*(dustardx[i][j]+dvstardy[i][j])/dt + phi[i+2][j+1] + phi[i][j+1] + phi[i+1][j+2] + phi[i+1][j]);
-                phi_last = phi[i+1][j+1];
                 phi[i+1][j+1] = alpha*phiStar[i][j] + (1-alpha) * phi[i+1][j+1]; //remplacer phistar direct ?
-                conv = fmax(fabs(phi[i+1][j+1]-phi_last),conv);
             }
+            //cond limite paroies lat
             phi[0][j+1] = phi[1][j+1];
             phi[M+1][j+1] = phi[M][j+1];
         }
+        //cond limite paroies horizontales
         for (int i=0; i<M; i++)
         {
             phi[i+1][0] = phi[i+1][1];
             phi[i+1][N+1] = phi[i+1][N];
         }
+        for (int j=0; j<N; j++)
+        {
+            for (int i=0; i<M; i++)
+            {
+                d2Tdx2_fun(phi,d2phidx2,h,M,N);
+                d2Tdy2_fun(phi,d2phidy2,h,M,N);
+                R = (d2phidx2[i][j]+d2phidy2[i][j]) - 1/dt*(dustardx[i][j]+dvstardy[i][j]);
+                sumR += R*R;
+            }
+        }
+        error = dt*H/U*sqrt(1/(L*H)*sumR*h*h);
+        printf("SOR global error = %f\n",error);
     }
+
+    free(phiStar);
+    free(dustardx);
+    free(dvstardy);
+    free(d2phidx2);
+    free(d2phidy2);
 }
 
 void u_Solve(double** ustar, double** phi, double** sol, double dt, double h,int M, int N)
@@ -216,4 +245,57 @@ void u_Solve(double** ustar, double** phi, double** sol, double dt, double h,int
     }
 
     dPdx_fun(phi,dphidx,h,M,N);
+
+    for (int i = 0; i<M-1; i++)
+    {
+        for (int j = 0; j<N; j++)
+        {
+            sol[i+1][j+1] = ustar[i+1][j+1] - dt * dphidx[i][j];
+        }
+        sol[i+1][0] = -0.2*(sol[i+1][3]-5*sol[i+1][2]+15*sol[i+1][1]);
+        sol[i+1][N+1] = sol[i+1][N];
+    }
+
+    free(dphidx);
+}
+
+void v_Solve(double** vstar, double** phi, double** sol, double dt, double h,int M, int N)
+{
+    double** dphidy  = calloc(M, sizeof( double *));
+    for (int k = 0; k<M; k++)
+    {
+        dphidy[k] = calloc(N-1,sizeof(double));
+    }
+
+    dPdy_fun(phi,dphidy,h,M,N);
+
+    for (int j = 0; j<N-1; j++)
+    {
+        for (int i = 0; i<M; i++)
+        {
+            sol[i+1][j+1] = vstar[i+1][j+1] - dt * dphidy[i][j];
+        }
+        sol[0][j+1] = -0.2*(sol[3][j+1]-5*sol[2][j+1]+15*sol[1][j+1]);;
+        sol[M+1][j+1] = -0.2*(sol[M+1-3][j+1]-5*sol[M+1-2][j+1]+15*sol[M+1-1][j+1]);;
+    }
+
+    free(dphidy);
+}
+
+void P_solve(double** P, double** phi, int M, int N)
+{
+    for (int i = 0; i < M; i++)
+    {
+        for (int j = 0; j < N; j++)
+        {
+            P[i+1][j+1] = P[i+1][j+1] + phi[i+1][j+1];
+        }
+        P[i+1][0] = P[i+1][1];
+        P[i+1][N+1] = P[i+1][N];
+    }
+    for (int j = 0; j < N; j++)
+    {
+        P[0][j+1] = P[1][j+1];
+        P[M+1][j+1] = P[M][j+1];
+    }
 }

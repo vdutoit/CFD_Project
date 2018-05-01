@@ -11,7 +11,7 @@ void dPdx_fun(double** P, double** sol, double h, int M, int N)
     //P est M+2xN+2, sol est de dim M-1xN (positionne sur les u) avec M et N le nombre de points dans le domaine frontiere comprise
     for (int j = 0; j<N; j++)
     {
-        for (int i = 0; i<M; i++)
+        for (int i = 0; i<M-1; i++)
         {
             sol[i][j] = (P[i+2][j+1]-P[i+1][j+1])/h;
         }
@@ -21,7 +21,7 @@ void dPdx_fun(double** P, double** sol, double h, int M, int N)
 void dPdy_fun(double** P, double** sol, double h, int M, int N)
 {
     //P est M+2xN+2, sol est de dim MxN-1 (positionne sur les v) avec M et N le nombre de points dans le domaine frontiere comprise
-    for (int i = 0; i<M; i++)
+    for (int i = 0; i<M-1; i++)
     {
         for (int j = 0; j<N; j++)
         {
@@ -79,7 +79,7 @@ void d2vdy2_fun(double** v, double** sol, double h, int M, int N) //IDEM QUE POU
 }
 
 void d2Tdx2_fun(double** T, double** sol, double h, int M, int N)
-{
+{   //T est M+2xN+2, sol est MxN AUSSI VALABLE POUR P ET PHI
     for (int i = 0; i<M; i++)
     {
         for (int j = 0; j<N; j++)
@@ -88,7 +88,7 @@ void d2Tdx2_fun(double** T, double** sol, double h, int M, int N)
 }
 
 void d2Tdy2_fun(double** T, double** sol, double h, int M, int N)
-{
+{   //T est M+2xN+2, sol est MxN AUSSI VALABLE POUR P ET PHI
     for (int i = 0; i<M; i++)
     {
         for (int j = 0; j<N; j++)
