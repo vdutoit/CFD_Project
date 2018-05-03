@@ -16,10 +16,13 @@ void Div_star_fun(double** ustar, double** vstar, double** sol, double h, int M,
 void d2Tdx2_fun(double** T, double** sol, double h, int N, int M);
 void d2Tdy2_fun(double** T, double** sol, double h, int N, int M);
 void AdvectiveT_fun(double** T, double** u, double** v, double** H, double h, int M, int N);
+void dudy_fun(double** u, double** sol, double h, int M, int N);
+void dvdx_fun(double** v, double** sol, double h, int M, int N);
+void getNorm(double** u, double** v, double** sol, double h, int M, int N);
 
 //Solvers
 void ustar_Solve(double** u, double** v, double** u_old, double** v_old, double** P, double** sol, double h, double dt, double nu, int M, int N, int firstStep);
-void vstar_Solve(double** u, double** v, double** adv, double** P, double** T, double** sol, double h, double dt, double T0, double nu, double beta, int M, int N); //AJOUTER TEMPERATURE
+void vstar_Solve(double** u, double** v, double** u_old, double** v_old, double** P, double** T, double** sol, double h, double dt, double T0, double nu, double beta, int M, int N, int firstStep);
 void SOR(double** phi, double** ustar, double** vstar, double tol, double alpha, double H, double U, double L, double h, double dt, int M, int N);
 void u_Solve(double** ustar, double** phi, double** sol, double dt, double h, int M, int N);
 void v_Solve(double** vstar, double** phi, double** sol, double dt, double h, int M, int N);
