@@ -11,8 +11,8 @@ int main (int argc, char *argv[])
 
     //Partie initialisation
 
-    double h = 0.1;
-    double L = 1;
+    double h = 1;
+    double L = 4;
     double H = 1.5*L;
     int M = (int) L/h;
     int N = (int) H/h;

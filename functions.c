@@ -21,9 +21,9 @@ void dPdx_fun(double** P, double** sol, double h, int M, int N)
 void dPdy_fun(double** P, double** sol, double h, int M, int N)
 {
     //P est M+2xN+2, sol est de dim MxN-1 (positionne sur les v) avec M et N le nombre de points dans le domaine frontiere comprise
-    for (int i = 0; i<M-1; i++)
+    for (int i = 0; i<M; i++)
     {
-        for (int j = 0; j<N; j++)
+        for (int j = 0; j<N-1; j++)
         {
             sol[i][j] = (P[i+1][j+2]-P[i+1][j+1])/h;
         }
