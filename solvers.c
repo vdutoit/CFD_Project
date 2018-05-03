@@ -79,7 +79,7 @@ void ustar_Solve(double** u, double** v, double** u_old, double** v_old, double*
     free(H_now);
 }
 
-void vstar_Solve(double** u, double** v, double** adv, double** P, double** T, double** sol, double h, double dt, double T0, double nu, double beta, int M, int N) //AJOUTER TEMPERATURE
+void vstar_Solve(double** u, double** v, double** u_old, double** v_old, double** P, double** T, double** sol, double h, double dt, double T0, double nu, double beta, int M, int N, int firstStep) //AJOUTER TEMPERATURE
 {
     //v est M+2xN+1, b est MxN-1, P est M+2xN+2, sol est M+2xN+1, adv est MxN-1
 
@@ -101,15 +101,42 @@ void vstar_Solve(double** u, double** v, double** adv, double** P, double** T, d
         d2vdy2[k] = calloc(N-1,sizeof(double));
     }
 
+    double** H_now  = calloc(M, sizeof( double *));
+    for (int k = 0; k<M; k++)
+    {
+        H_now[k] = calloc(N-1,sizeof(double));
+    }
+
     dPdy_fun(P,dPdy,h,M,N);
     d2vdx2_fun(v,d2vdx2,h,M,N);
     d2vdy2_fun(v,d2vdy2,h,M,N);
+    AdvectiveY_fun(u,v,H_now,h,M,N);
 
-    for (int i = 0; i<M; i++)
+    if (firstStep == 0)
+    {
+        double** H_old  = calloc(M, sizeof( double *));
+        for (int k = 0; k<M; k++)
+        {
+            H_old[k] = calloc(N-1,sizeof(double));
+        }
+        AdvectiveY_fun(u_old,v_old,H_old,h,M,N);
+        for (int i = 0; i<M; i++)
     {
         for (int j = 0; j<N-1; j++)
         {
-            sol[i+1][j+1] = v[i+1][j+1] + dt * (-1*adv[i][j] - dPdy[i][j] + 9.81 * beta*(T[i+1][j+1] - T0) + nu * (d2vdx2[i][j] + d2vdy2[i][j]));
+            sol[i+1][j+1] = v[i+1][j+1] + dt * (-0.5*(3*H_now[i][j]-H_old[i][j]) - dPdy[i][j] + 9.81 * beta*(T[i+1][j+1] - T0) + nu * (d2vdx2[i][j] + d2vdy2[i][j]));
+        }
+    }
+        free(H_old);
+    }
+    else
+    {
+        for (int i = 0; i<M-1; i++)
+        {
+            for (int j = 0; j<N; j++)
+            {
+                sol[i+1][j+1] = v[i+1][j+1] + dt * (-1*H_now[i][j] - dPdy[i][j] + 9.81 * beta*(T[i+1][j+1] - T0) + nu * (d2vdx2[i][j] + d2vdy2[i][j]));
+            }
         }
     }
 
@@ -124,6 +151,7 @@ void vstar_Solve(double** u, double** v, double** adv, double** P, double** T, d
     free(dPdy);
     free(d2vdx2);
     free(d2vdy2);
+    free(H_now);
 }
 
 void T_solve(double** T, double** u_old, double** v_old, double** u_now, double** v_now, double h, double dt, double q_w, double T_inf, double h_barre, double k, double alpha, int M, int N, int firstStep)
