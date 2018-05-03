@@ -73,6 +73,13 @@ void ustar_Solve(double** u, double** v, double** u_old, double** v_old, double*
         sol[i][0] = -0.2*(sol[i][3]-5*sol[i][2]+15*sol[i][1]); //no slip condition at bottom
     }
 
+    for (int k = 0; k<M-1; k++)
+    {
+         free(dPdx[k]);
+         free(d2udx2[k]);
+         free(d2udy2[k]);
+         free(H_now[k]);
+    }
     free(dPdx);
     free(d2udx2);
     free(d2udy2);
@@ -97,9 +104,45 @@ void vstar_Solve(double** u, double** v, double** u_old, double** v_old, double*
     }
 
     dPdy_fun(P,dPdy,h,M,N);
-    d2vdx2_fun(v,d2vdx2,h,M,N);
-    d2vdy2_fun(v,d2vdy2,h,M,N);
-    AdvectiveY_fun(u,v,H_now,h,M,N);
+//    d2vdx2_fun(v,d2vdx2,h,M,N);
+//    d2vdy2_fun(v,d2vdy2,h,M,N);
+//    AdvectiveY_fun(u,v,H_now,h,M,N);
+//
+//    if (firstStep == 0)
+//    {
+//        double** H_old  = calloc(M, sizeof( double *));
+//        for (int k = 0; k<M; k++)
+//        {
+//            H_old[k] = calloc(N-1,sizeof(double));
+//        }
+//        AdvectiveY_fun(u_old,v_old,H_old,h,M,N);
+//        for (int i = 0; i<M; i++)
+//    {
+//        for (int j = 0; j<N-1; j++)
+//        {
+//            sol[i+1][j+1] = v[i+1][j+1] + dt * (-0.5*(3*H_now[i][j]-H_old[i][j]) - dPdy[i][j] + 9.81 * beta*(T[i+1][j+1] - T0) + nu * (d2vdx2[i][j] + d2vdy2[i][j]));
+//        }
+//    }
+//        free(H_old);
+//    }
+//    else
+//    {
+//        for (int i = 0; i<M; i++)
+//        {
+//            for (int j = 0; j<N-1; j++)
+//            {
+//                sol[i+1][j+1] = v[i+1][j+1] + dt * (-1*H_now[i][j] - dPdy[i][j] + 9.81 * beta*(T[i+1][j+1] - T0) + nu * (d2vdx2[i][j] + d2vdy2[i][j]));
+//            }
+//        }
+//    }
+//
+//    //imposer conditions aux limites pour ustar -> 0 sur les paroies laterales (rien changer), u0 en y=0 et u[i][N+1] = u[i][N] sauf en i=0 et i=M
+//
+//    for (int j = 1; j<N; j++)
+//    {
+//        sol[0][j] = -0.2*(sol[3][j]-5*sol[2][j]+15*sol[1][j]); //no slip condition at left wall
+//        sol[M+1][j] = -0.2*(sol[M+1-3][j]-5*sol[M+1-2][j]+15*sol[M+1-1][j]); //no slip condition at right wall
+//    }
 
     if (firstStep == 0)
     {
@@ -110,12 +153,12 @@ void vstar_Solve(double** u, double** v, double** u_old, double** v_old, double*
         }
         AdvectiveY_fun(u_old,v_old,H_old,h,M,N);
         for (int i = 0; i<M; i++)
+    {
+        for (int j = 0; j<N-1; j++)
         {
-            for (int j = 0; j<N-1; j++)
-            {
-                sol[i+1][j+1] = v[i+1][j+1] + dt * (-0.5*(3*H_now[i][j]-H_old[i][j]) - dPdy[i][j] + 9.81 * beta*(T[i+1][j+1] - T0) + nu * (d2vdx2[i][j] + d2vdy2[i][j]));
-            }
+            sol[i+1][j+1] = v[i+1][j+1] + dt * (-0.5*(3*H_now[i][j]-H_old[i][j]) - dPdy[i][j] + 9.81 * beta*(T[i+1][j+1] - T0) + nu * (d2vdx2[i][j] + d2vdy2[i][j]));
         }
+    }
         free(H_old);
     }
     else
@@ -128,15 +171,6 @@ void vstar_Solve(double** u, double** v, double** u_old, double** v_old, double*
             }
         }
     }
-
-    //imposer conditions aux limites pour ustar -> 0 sur les paroies laterales (rien changer), u0 en y=0 et u[i][N+1] = u[i][N] sauf en i=0 et i=M
-
-    for (int j = 1; j<N; j++)
-    {
-        sol[0][j] = -0.2*(sol[3][j]-5*sol[2][j]+15*sol[1][j]); //no slip condition at left wall
-        sol[M+1][j] = -0.2*(sol[M+1-3][j]-5*sol[M+1-2][j]+15*sol[M+1-1][j]); //no slip condition at right wall
-    }
-
     free(dPdy);
     free(d2vdx2);
     free(d2vdy2);
@@ -185,6 +219,11 @@ void T_solve(double** T, double** u_old, double** v_old, double** u_now, double*
                 T[i+1][j+1] = T[i+1][j+1] + dt * ( -0.5 * (3*H_now[i][j]-H_old[i][j])  + alpha * (d2Tdx2[i][j] + d2Tdy2[i][j]));
             }
         }
+
+        for (int k = 0; k<M; k++)
+        {
+            free(H_old[k]);
+        }
         free(H_old);
     }
     else
@@ -197,7 +236,6 @@ void T_solve(double** T, double** u_old, double** v_old, double** u_now, double*
             }
         }
     }
-
 
     //calculer dTdy_e avec les T au temps n ou n+1 ?
     double q_e = 0;
@@ -221,6 +259,12 @@ void T_solve(double** T, double** u_old, double** v_old, double** u_now, double*
         T[i+1][N+1] = T[i+1][N] + h*dTdy_e[i];
     }
 
+    for (int k = 0; k<M; k++)
+        {
+            free(H_now[k]);
+            free(d2Tdx2[k]);
+            free(d2Tdy2[k]);
+        }
     free(H_now);
     free(d2Tdy2);
     free(d2Tdx2);
@@ -287,6 +331,15 @@ void SOR(double** phi, double** ustar, double** vstar, double tol, double alpha,
         printf("SOR global error = %f\n",error);
     }
 
+    for (int k = 0; k<M; k++)
+    {
+         free(phiStar[k]);
+         free(dustardx[k]);
+         free(dvstardy[k]);
+         free(d2phidx2[k]);
+         free(d2phidy2[k]);
+    }
+
     free(phiStar);
     free(dustardx);
     free(dvstardy);
@@ -314,6 +367,10 @@ void u_Solve(double** ustar, double** phi, double** sol, double dt, double h,int
         sol[i+1][N+1] = sol[i+1][N];
     }
 
+    for (int k = 0; k<M-1; k++)
+    {
+        free(dphidx[k]);
+    }
     free(dphidx);
 }
 
@@ -337,6 +394,10 @@ void v_Solve(double** vstar, double** phi, double** sol, double dt, double h,int
         sol[M+1][j+1] = -0.2*(sol[M+1-3][j+1]-5*sol[M+1-2][j+1]+15*sol[M+1-1][j+1]);;
     }
 
+    for (int k = 0; k<M; k++)
+    {
+        free(dphidy[k]);
+    }
     free(dphidy);
 }
 
@@ -357,3 +418,30 @@ void P_solve(double** P, double** phi, int M, int N)
         P[M+1][j+1] = P[M][j+1];
     }
 }
+
+    if (firstStep == 0)
+    {
+        double** H_old  = calloc(M, sizeof( double *));
+        for (int k = 0; k<M; k++)
+        {
+            H_old[k] = calloc(N-1,sizeof(double));
+        }
+        AdvectiveY_fun(u_old,v_old,H_old,h,M,N);
+        for (int i = 0; i<M; i++)
+        {
+            for (int j = 0; j<N-1; j++)
+            {
+                sol[i+1][j+1] = v[i+1][j+1] + dt * (-0.5*(3*H_now[i][j]-H_old[i][j]) - dPdy[i][j] + 9.81 * beta*(T[i+1][j+1] - T0) + nu * (d2vdx2[i][j] + d2vdy2[i][j]));
+            }
+        }
+        free(H_old);
+    }
+    else
+    {
+        for (int i = 0; i<M; i++)
+        {
+            for (int j = 0; j<N-1; j++)
+            {
+                sol[i+1][j+1] = v[i+1][j+1] + dt * (-1*H_now[i][j] - dPdy[i][j] + 9.81 * beta*(T[i+1][j+1] - T0) + nu * (d2vdx2[i][j] + d2vdy2[i][j]));
+            }
+        }
