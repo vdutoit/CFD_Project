@@ -16,6 +16,9 @@ void Div_star_fun(double** ustar, double** vstar, double** sol, double h, int M,
 void d2Tdx2_fun(double** T, double** sol, double h, int N, int M);
 void d2Tdy2_fun(double** T, double** sol, double h, int N, int M);
 void AdvectiveT_fun(double** T, double** u, double** v, double** H, double h, int M, int N);
+void dudy_fun(double** u, double** sol, double h, int M, int N);
+void dvdx_fun(double** v, double** sol, double h, int M, int N);
+void getNorm(double** u, double** v, double** sol, double h, int M, int N);
 
 //Solvers
 void ustar_Solve(double** u, double** v, double** u_old, double** v_old, double** P, double** sol, double h, double dt, double nu, int M, int N, int firstStep);
