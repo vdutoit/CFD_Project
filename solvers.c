@@ -5,7 +5,7 @@
 #include"thomas.h"
 #include"functions.h"
 
-void ustar_Solve(double** u, double** v, double** adv, double** P, double** sol, double h, double dt, double nu, int M, int N)
+void ustar_Solve(double** u, double** v, double** u_old, double** v_old, double** P, double** sol, double h, double dt, double nu, int M, int N, int firstStep)
 {
     //u est M+1xN+2, a est M-1xN, P est M+2xN+2, sol est M+1xN+2, adv est M-1xN
 
@@ -27,15 +27,41 @@ void ustar_Solve(double** u, double** v, double** adv, double** P, double** sol,
         d2udy2[k] = calloc(N,sizeof(double));
     }
 
+    double** H_now  = calloc(M-1, sizeof( double *));
+    for (int k = 0; k<M-1; k++)
+    {
+        H_now[k] = calloc(N,sizeof(double));
+    }
+
     dPdx_fun(P,dPdx,h,M,N);
     d2udx2_fun(u,d2udx2,h,M,N);
     d2udy2_fun(u,d2udy2,h,M,N);
-
-    for (int i = 0; i<M-1; i++)
+    AdvectiveX_fun(u,v,H_now,h,M,N);
+    if (firstStep == 0)
     {
-        for (int j = 0; j<N; j++)
+        double** H_old  = calloc(M-1, sizeof( double *));
+        for (int k = 0; k<M-1; k++)
         {
-            sol[i+1][j+1] = u[i+1][j+1] + dt * (-1*adv[i][j] - dPdx[i][j]  + nu * (d2udx2[i][j] + d2udy2[i][j]));
+            H_old[k] = calloc(N,sizeof(double));
+        }
+        AdvectiveX_fun(u_old,v_old,H_old,h,M,N);
+        for (int i = 0; i<M-1; i++)
+        {
+            for (int j = 0; j<N; j++)
+            {
+                sol[i+1][j+1] = u[i+1][j+1] + dt * (-0.5*(3*H_now[i][j]-H_old[i][j]) - dPdx[i][j]  + nu * (d2udx2[i][j] + d2udy2[i][j]));
+            }
+        }
+        free(H_old);
+    }
+    else
+    {
+        for (int i = 0; i<M-1; i++)
+        {
+            for (int j = 0; j<N; j++)
+            {
+                sol[i+1][j+1] = u[i+1][j+1] + dt * (-1*H_now[i][j] - dPdx[i][j]  + nu * (d2udx2[i][j] + d2udy2[i][j]));
+            }
         }
     }
 
@@ -50,6 +76,7 @@ void ustar_Solve(double** u, double** v, double** adv, double** P, double** sol,
     free(dPdx);
     free(d2udx2);
     free(d2udy2);
+    free(H_now);
 }
 
 void vstar_Solve(double** u, double** v, double** adv, double** P, double** T, double** sol, double h, double dt, double T0, double nu, double beta, int M, int N) //AJOUTER TEMPERATURE
@@ -99,7 +126,7 @@ void vstar_Solve(double** u, double** v, double** adv, double** P, double** T, d
     free(d2vdy2);
 }
 
-void T_solve(double** T, double** H, double h, double dt, double q_w, double T_inf, double h_barre, double k, double alpha, int M, int N)
+void T_solve(double** T, double** u_old, double** v_old, double** u_now, double** v_now, double h, double dt, double q_w, double T_inf, double h_barre, double k, double alpha, int M, int N, int firstStep)
 {
     //T est M+2xN+2, H est MxN, deja assemble avec AB2 ou euler, sol est M+2xN+2
     // on a vraiment besoin d un vecteur sol ? pourquoi ne pas directement overwrite T
@@ -115,25 +142,52 @@ void T_solve(double** T, double** H, double h, double dt, double q_w, double T_i
         d2Tdy2[k] = calloc(N,sizeof(double));
     }
 
+    double** H_now  = calloc(M, sizeof( double *));
+    for (int k = 0; k<M; k++)
+    {
+        H_now[k] = calloc(N,sizeof(double));
+    }
+
     double* dTdy_e  = calloc(M, sizeof(double));
 
     d2Tdx2_fun(T, d2Tdx2, h, M, N);
     d2Tdy2_fun(T, d2Tdy2, h, M, N);
+    AdvectiveT_fun(T,u_now,v_now,H_now,h,M,N);
+    if (firstStep == 0)
+    {
+        double** H_old  = calloc(M, sizeof( double *));
+        for (int k = 0; k<M; k++)
+        {
+            H_old[k] = calloc(N,sizeof(double));
+        }
+        AdvectiveT_fun(T,u_old,v_old,H_old,h,M,N);
+        for (int i = 0; i<M; i++)
+        {
+            for (int j = 0; j<N; j++)
+            {
+                T[i+1][j+1] = T[i+1][j+1] + dt * ( -0.5 * (3*H_now[i][j]-H_old[i][j])  + alpha * (d2Tdx2[i][j] + d2Tdy2[i][j]));
+            }
+        }
+        free(H_old);
+    }
+    else
+    {
+        for (int i = 0; i<M; i++)
+        {
+            for (int j = 0; j<N; j++)
+            {
+                T[i+1][j+1] = T[i+1][j+1] + dt * ( -1*H_now[i][j]  + alpha * (d2Tdx2[i][j] + d2Tdy2[i][j]));
+            }
+        }
+    }
+
 
     //calculer dTdy_e avec les T au temps n ou n+1 ?
     double q_e = 0;
-    for (int i=1;1<M+1;i++)
+    for (int i=1; 1<M+1; i++)
     {
         q_e = h_barre*((T[i][N+1]-T[i][N])/2 - T_inf);
         dTdy_e[i-1] = -q_e/k;
-    }
-
-    for (int i = 0; i<M; i++)
-    {
-        for (int j = 0; j<N; j++)
-        {
-            T[i+1][j+1] = T[i+1][j+1] + dt * ( -1 * H[i][j] + alpha * (d2Tdx2[i][j] + d2Tdy2[i][j]));
-        }
     }
 
     for (int i = 0; i<N; i++)
@@ -156,6 +210,7 @@ void T_solve(double** T, double** H, double h, double dt, double q_w, double T_i
         T[i+1][N+1] = T[i+1][N] + h*dTdy_e[i];
     }
 
+    free(H_now);
     free(d2Tdy2);
     free(d2Tdx2);
     free(dTdy_e);
