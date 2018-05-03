@@ -88,38 +88,38 @@ int main (int argc, char *argv[])
 
     for (int i = 0; i < nt; i++)
     {
-//        for (int j = 0; j < N+2; j++)
-//        {
-//            for (int k = 0; k < M+2; k++)
-//            {
-//                fprintf(temperature,"%f ", (T[k][j]-T_0)/T_inf);
-//            }
-//        }
-//
+        for (int j = 0; j < N+2; j++)
+        {
+            for (int k = 0; k < M+2; k++)
+            {
+                fprintf(temperature,"%f ", (T[k][j]-T_0)/T_inf);
+            }
+            fprintf(temperature,"\n");
+        }
+
         ustar_Solve(u, v, u_old, v_old, P, ustar, h, dt, nu, M, N, firstStep); //Il y aura 2 if a la place d'un vu que les ifs sont incorporés dans la fonction
         vstar_Solve(u, v, u_old, v_old, P, T, vstar, h, dt, T_0, nu, beta, M, N, firstStep);   //Ça vaut peut etre la peine de juste mettre un if dans la main.
-//
+
         T_solve(T, u_old, v_old, u, v, h, dt, q_w, T_inf, h_barre, k, alpha, M, N, firstStep);
-//
-//        u_buffer = u_old;
-//        v_buffer = v_old;
-//
-//        u_old = u; //Attention opérations incorrectes!!
-//        v_old = v;
-//
-//        u = u_buffer;
-//        v = v_buffer;
-//
-//        SOR(phi, ustar, vstar, tol, alpha, H, U, L, h, dt, M, N);
-//
-//        u_Solve(ustar, phi, u, dt, h, M, N);
-//        v_Solve(vstar, phi, v, dt, h, M, N);
-//
-//        P_solve(P, phi, M, N);
-//
-//        firstStep = 0;
-//
-//
+
+        u_buffer = u_old;
+        v_buffer = v_old;
+
+        u_old = u; //Attention opérations incorrectes!!
+        v_old = v;
+
+        u = u_buffer;
+        v = v_buffer;
+
+        SOR(phi, ustar, vstar, tol, 1.97, H, U, L, h, dt, M, N);
+        //
+        // u_Solve(ustar, phi, u, dt, h, M, N);
+        // v_Solve(vstar, phi, v, dt, h, M, N);
+        //
+        // P_solve(P, phi, M, N);
+        //
+        // firstStep = 0;
+
     }
 
     for (int k = 0; k<M+1; k++)

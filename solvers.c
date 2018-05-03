@@ -212,7 +212,7 @@ void T_solve(double** T, double** u_old, double** v_old, double** u_now, double*
 
     //calculer dTdy_e avec les T au temps n ou n+1 ?
     double q_e = 0;
-    for (int i=1; 1<M+1; i++)
+    for (int i=1; i<M+1; i++)
     {
         q_e = h_barre*((T[i][N+1]-T[i][N])/2 - T_inf);
         dTdy_e[i-1] = -q_e/k;
@@ -225,12 +225,6 @@ void T_solve(double** T, double** u_old, double** v_old, double** u_now, double*
     }
 
     double dTdy_w = -q_w/k;
-//    double q_e = 0;
-//    for (int i=1;1<M+1;i++)
-//    {
-//        q_e = h_barre*((T[i][N+1]-T[i][N])/2 - T_inf);
-//        dTdy_e[i-1] = -q_e/k;
-//    }
 
     for (int i = 0; i<M; i++)
     {
@@ -247,30 +241,19 @@ void T_solve(double** T, double** u_old, double** v_old, double** u_now, double*
 void SOR(double** phi, double** ustar, double** vstar, double tol, double alpha, double H, double U, double L, double h, double dt, int M, int N)
 {
     double** phiStar  = calloc(M, sizeof( double *));
-    for (int k = 0; k<M; k++)
-    {
-        phiStar[k] = calloc(N,sizeof(double));
-    }
     double** dustardx  = calloc(M, sizeof( double *));
-    for (int k = 0; k<M; k++)
-    {
-        dustardx[k] = calloc(N,sizeof(double));
-    }
     double** dvstardy  = calloc(M, sizeof( double *));
-    for (int k = 0; k<M; k++)
-    {
-        dvstardy[k] = calloc(N,sizeof(double));
-    }
     double** d2phidx2  = calloc(M, sizeof( double *));
-    for (int k = 0; k<M; k++)
-    {
-        d2phidx2[k] = calloc(N,sizeof(double));
-    }
     double** d2phidy2  = calloc(M, sizeof( double *));
     for (int k = 0; k<M; k++)
     {
+        phiStar[k] = calloc(N,sizeof(double));
+        dustardx[k] = calloc(N,sizeof(double));
+        dvstardy[k] = calloc(N,sizeof(double));
+        d2phidx2[k] = calloc(N,sizeof(double));
         d2phidy2[k] = calloc(N,sizeof(double));
     }
+
     double R = 0;
     double sumR = 0;
     double error = 1;
@@ -308,7 +291,7 @@ void SOR(double** phi, double** ustar, double** vstar, double tol, double alpha,
                 sumR += R*R;
             }
         }
-        error = dt*H/U*sqrt(1/(L*H)*sumR*h*h);
+        error = (dt*H/U)*sqrt(1/(L*H)*sumR*h*h);
         printf("SOR global error = %f\n",error);
     }
 
