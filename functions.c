@@ -106,7 +106,7 @@ void AdvectiveX_fun(double** u, double** v, double** a, double h, int M, int N)
         Uij[k] = calloc(N,sizeof(double));
     }
     double** Vij = calloc(M-1, sizeof( double *));
-    for (int k = 0; k<M; k++)
+    for (int k = 0; k<M-1; k++)
     {
         Vij[k] = calloc(N+1,sizeof(double));
     }
@@ -148,7 +148,7 @@ void AdvectiveY_fun(double** u, double** v, double** b, double h, int M, int N)
     //u est M+1xN+2 , v est M+2xN+1, b est MxN-1 avec M et N le nombre de points dans le domaine frontiere comprise
 
     double** Uij = calloc(M+1, sizeof( double *));
-    for (int k = 0; k<M; k++)
+    for (int k = 0; k<M+1; k++)
     {
         Uij[k] = calloc(N-1,sizeof(double));
     }
@@ -176,9 +176,9 @@ void AdvectiveY_fun(double** u, double** v, double** b, double h, int M, int N)
         }
     }
 
-    for (int i=0; i<M-1; i++)
+    for (int i=0; i<M; i++)
     {
-        for (int j=0; j<N; j++)
+        for (int j=0; j<N-1; j++)
         {
             //b[0][0] est place en (1,1.5)
             b[i][j] = 0.5 *(Vij[i][j+1] * (v[i+1][j+2]-v[i+1][j+1])/h + Vij[i][j] * (v[i+1][j+1]-v[i+1][j])/h)
@@ -273,32 +273,39 @@ void dvdy_fun(double** v, double** sol, double h, int M, int N)
     }
 }
 
-//void Div_star_fun(double** ustar, double** vstar, double** sol, double h, int M, int N) //vraiment utile ? je pense pas autant faire direct dudx + dvdy
-//{
-//    //ustar est M+1xN+2, vstar est M+2xN+1, sol est MxN
-//    double** dudx  = calloc(M, sizeof( double *));
-//    for (int k = 0; k<M; k++)
-//    {
-//        dudx[k] = calloc(N,sizeof(double));
-//    }
-//
-//    double** dvdy = calloc(M, sizeof( double *));
-//    for (int k = 0; k<M; k++)
-//    {
-//        dvdy[k] = calloc(N,sizeof(double));
-//    }
-//
-//    dudx_fun(ustar,dudx,h,M,N);
-//    dvdy_fun(vstar,dvdy,h,M,N);
-//
-//    for (int i = 0; i<M; i++)
-//    {
-//        for (int j = 0; j<N; j++)
-//        {
-//            sol[i][j] = dudx[i][j] + dvdy[i][j];
-//        }
-//    }
-//
-//    free(dudx);
-//    free(dvdy);
-//}
+void dvdx_fun(double** v, double** sol, double h, int M, int N)
+{
+    //derivee centree sur les points sans symbole
+    //v est M+2xN+1, sol est M-1xN-1
+
+    for (int i = 0; i<M-1; i++)
+    {
+        for (int j = 0; j<N-1; j++)
+        {
+            sol[i][j] = (v[i+2][j+1]-v[i+1][j+1])/h;
+        }
+    }
+}
+
+void dudy_fun(double** u, double** sol, double h, int M, int N)
+{
+    //derivee centree sur les points sans symbole
+    //v est M+2xN+1, sol est M-1xN-1
+
+    for (int i = 0; i<M-1; i++)
+    {
+        for (int j = 0; j<N-1; j++)
+        {
+            sol[i][j] = (u[i+1][j+2]-u[i+1][j+1])/h;
+        }
+    }
+}
+
+void getNorm(double** u, double** v, double** sol, double h, int M, int N)
+{
+    double** Uij = calloc(M+1, sizeof( double *));
+    for (int k = 0; k<M; k++)
+    {
+        Uij[k] = calloc(N-1,sizeof(double));
+    }
+}
