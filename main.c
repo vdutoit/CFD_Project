@@ -138,5 +138,14 @@ int main (int argc, char *argv[])
         free(T[k]);
         free(phi[k]);
     }
+    free(u);
+    free(u_old);
+    free(ustar);
+    free(v);
+    free(v_old);
+    free(vstar);
+    free(P);
+    free(T);
+    free(phi);
 
 }
