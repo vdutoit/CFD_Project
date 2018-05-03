@@ -131,9 +131,9 @@ void vstar_Solve(double** u, double** v, double** u_old, double** v_old, double*
     }
     else
     {
-        for (int i = 0; i<M-1; i++)
+        for (int i = 0; i<M; i++)
         {
-            for (int j = 0; j<N; j++)
+            for (int j = 0; j<N-1; j++)
             {
                 sol[i+1][j+1] = v[i+1][j+1] + dt * (-1*H_now[i][j] - dPdy[i][j] + 9.81 * beta*(T[i+1][j+1] - T0) + nu * (d2vdx2[i][j] + d2vdy2[i][j]));
             }

@@ -11,7 +11,7 @@ int main (int argc, char *argv[])
 
     //Partie initialisation
 
-    double h = 0.5;
+    double h = 0.1;
     double L = 1;
     double H = 1.5*L;
     int M = (int) L/h;
@@ -44,16 +44,6 @@ int main (int argc, char *argv[])
         exit(1);
     }
 
-    // On considère initiallement une matrice petit p identique partout, ici représentée par un scalaire
-    for(int i = 0; i<M+2; i++)
-    {
-        for(int j = 0; j<N+2; j++)
-        {
-            P[i][j] = ((p_init - p_ref) + rho_0*g*(H - j*h))/rho_0;
-            T[i][j] = T_0;
-        }
-    }
-
     // Pour u et v, pas de remplissage supplémentaire nécessaire, initiallement à 0;
     double** u = calloc(M+1, sizeof( double *));
     double** u_old = calloc(M+1, sizeof( double *));
@@ -81,6 +71,16 @@ int main (int argc, char *argv[])
         phi[k] = calloc(N+2,sizeof(double));
     }
 
+    // On considère initiallement une matrice petit p identique partout, ici représentée par un scalaire
+    for(int i = 0; i<M+2; i++)
+    {
+        for(int j = 0; j<N+2; j++)
+        {
+            P[i][j] = ((p_init - p_ref) + rho_0*g*(H - j*h))/rho_0;
+            T[i][j] = T_0;
+        }
+    }
+
     int firstStep = 1;
 
     double** u_buffer;
@@ -88,38 +88,38 @@ int main (int argc, char *argv[])
 
     for (int i = 0; i < nt; i++)
     {
-        for (int j = 0; j < N+2; j++)
-        {
-            for (int k = 0; k < M+2; k++)
-            {
-                fprintf(temperature,"%f ", (T[k][j]-T_0)/T_inf);
-            }
-        }
-
+//        for (int j = 0; j < N+2; j++)
+//        {
+//            for (int k = 0; k < M+2; k++)
+//            {
+//                fprintf(temperature,"%f ", (T[k][j]-T_0)/T_inf);
+//            }
+//        }
+//
         ustar_Solve(u, v, u_old, v_old, P, ustar, h, dt, nu, M, N, firstStep); //Il y aura 2 if a la place d'un vu que les ifs sont incorporés dans la fonction
-        vstar_Solve(u, v, u_old, v_old, P, vstar, h, dt, nu, M, N, firstStep); //Ça vaut peut etre la peine de juste mettre un if dans la main.
-
-        T_solve(T, u_old, v_old, u, v, h, dt, q_w, T_inf, h_barre, k, alpha, M, N, firstStep)
-
-        u_buffer = u_old;
-        v_buffer = v_old;
-
-        u_old = u; //Attention opérations incorrectes!!
-        v_old = v;
-
-        u = u_buffer;
-        v = v_buffer;
-
-        SOR(phi, ustar, vstar, tol, alpha, H, U, L, h, dt, M, N);
-
-        u_Solve(ustar, phi, u, dt, h, M, N);
-        v_Solve(vstar, phi, v, dt, h, M, N);
-
-        P_solve(P, phi, M, N);
-
-        firstStep = 0;
-
-
+        vstar_Solve(u, v, u_old, v_old, P, T, vstar, h, dt, T_0, nu, beta, M, N, firstStep);   //Ça vaut peut etre la peine de juste mettre un if dans la main.
+//
+        T_solve(T, u_old, v_old, u, v, h, dt, q_w, T_inf, h_barre, k, alpha, M, N, firstStep);
+//
+//        u_buffer = u_old;
+//        v_buffer = v_old;
+//
+//        u_old = u; //Attention opérations incorrectes!!
+//        v_old = v;
+//
+//        u = u_buffer;
+//        v = v_buffer;
+//
+//        SOR(phi, ustar, vstar, tol, alpha, H, U, L, h, dt, M, N);
+//
+//        u_Solve(ustar, phi, u, dt, h, M, N);
+//        v_Solve(vstar, phi, v, dt, h, M, N);
+//
+//        P_solve(P, phi, M, N);
+//
+//        firstStep = 0;
+//
+//
     }
 
     for (int k = 0; k<M+1; k++)
