@@ -104,45 +104,46 @@ void vstar_Solve(double** u, double** v, double** u_old, double** v_old, double*
     }
 
     dPdy_fun(P,dPdy,h,M,N);
-//    d2vdx2_fun(v,d2vdx2,h,M,N);
-//    d2vdy2_fun(v,d2vdy2,h,M,N);
-//    AdvectiveY_fun(u,v,H_now,h,M,N);
-//
-//    if (firstStep == 0)
-//    {
-//        double** H_old  = calloc(M, sizeof( double *));
-//        for (int k = 0; k<M; k++)
-//        {
-//            H_old[k] = calloc(N-1,sizeof(double));
-//        }
-//        AdvectiveY_fun(u_old,v_old,H_old,h,M,N);
-//        for (int i = 0; i<M; i++)
-//    {
-//        for (int j = 0; j<N-1; j++)
-//        {
-//            sol[i+1][j+1] = v[i+1][j+1] + dt * (-0.5*(3*H_now[i][j]-H_old[i][j]) - dPdy[i][j] + 9.81 * beta*(T[i+1][j+1] - T0) + nu * (d2vdx2[i][j] + d2vdy2[i][j]));
-//        }
-//    }
-//        free(H_old);
-//    }
-//    else
-//    {
-//        for (int i = 0; i<M; i++)
-//        {
-//            for (int j = 0; j<N-1; j++)
-//            {
-//                sol[i+1][j+1] = v[i+1][j+1] + dt * (-1*H_now[i][j] - dPdy[i][j] + 9.81 * beta*(T[i+1][j+1] - T0) + nu * (d2vdx2[i][j] + d2vdy2[i][j]));
-//            }
-//        }
-//    }
-//
-//    //imposer conditions aux limites pour ustar -> 0 sur les paroies laterales (rien changer), u0 en y=0 et u[i][N+1] = u[i][N] sauf en i=0 et i=M
-//
-//    for (int j = 1; j<N; j++)
-//    {
-//        sol[0][j] = -0.2*(sol[3][j]-5*sol[2][j]+15*sol[1][j]); //no slip condition at left wall
-//        sol[M+1][j] = -0.2*(sol[M+1-3][j]-5*sol[M+1-2][j]+15*sol[M+1-1][j]); //no slip condition at right wall
-//    }
+    d2vdx2_fun(v,d2vdx2,h,M,N);
+    d2vdy2_fun(v,d2vdy2,h,M,N);
+    AdvectiveY_fun(u,v,H_now,h,M,N);
+
+    if (firstStep == 0)
+    {
+        double** H_old  = calloc(M, sizeof( double *));
+        for (int k = 0; k<M; k++)
+        {
+            H_old[k] = calloc(N-1,sizeof(double));
+        }
+        AdvectiveY_fun(u_old,v_old,H_old,h,M,N);
+        for (int i = 0; i<M; i++)
+    {
+        for (int j = 0; j<N-1; j++)
+        {
+            sol[i+1][j+1] = v[i+1][j+1] + dt * (-0.5*(3*H_now[i][j]-H_old[i][j]) - dPdy[i][j] + 9.81 * beta*(T[i+1][j+1] - T0) + nu * (d2vdx2[i][j] + d2vdy2[i][j]));
+        }
+    }
+        free(H_old);
+    }
+    else
+    {
+        for (int i = 0; i<M; i++)
+        {
+            for (int j = 0; j<N-1; j++)
+            {
+                sol[i+1][j+1] = v[i+1][j+1] + dt * (-1*H_now[i][j] - dPdy[i][j] + 9.81 * beta*(T[i+1][j+1] - T0) + nu * (d2vdx2[i][j] + d2vdy2[i][j]));
+                //printf("%f\n", dPdy[i][j]);
+            }
+        }
+    }
+
+    //imposer conditions aux limites pour ustar -> 0 sur les paroies laterales (rien changer), u0 en y=0 et u[i][N+1] = u[i][N] sauf en i=0 et i=M
+
+    for (int j = 1; j<N; j++)
+    {
+        sol[0][j] = -0.2*(sol[3][j]-5*sol[2][j]+15*sol[1][j]); //no slip condition at left wall
+        sol[M+1][j] = -0.2*(sol[M+1-3][j]-5*sol[M+1-2][j]+15*sol[M+1-1][j]); //no slip condition at right wall
+    }
 
     if (firstStep == 0)
     {
@@ -290,11 +291,11 @@ void SOR(double** phi, double** ustar, double** vstar, double tol, double alpha,
     double R = 0;
     double sumR = 0;
     double error = 1;
-
+    int iter = 0;
     dudx_fun(ustar,dustardx,h,M,N); //Erreur avec vstar!!!!@@@@@ attention!
     dvdy_fun(vstar,dvstardy,h,M,N);
 
-    while (error > tol)
+    while (error > tol && iter < 100)
     {
         sumR = 0;
         for (int j=0; j<N; j++)
@@ -323,12 +324,14 @@ void SOR(double** phi, double** ustar, double** vstar, double tol, double alpha,
                 d2Tdx2_fun(phi,d2phidx2,h,M,N);
                 d2Tdy2_fun(phi,d2phidy2,h,M,N);
                 R = (d2phidx2[i][j]+d2phidy2[i][j]) - 1/dt*(dustardx[i][j]+dvstardy[i][j]);
-                printf("Random dustardx = %f\n",vstar[i][j]);
+//                printf("dvstardy = %f\n",dvstardy[i][j]);
                 sumR += R*R;
             }
         }
         error = (dt*H/U)*sqrt(1/(L*H)*sumR*h*h);
         printf("SOR global error = %f\n",error);
+        //iter++;
+        //printf("%d\n",iter);
     }
 
     for (int k = 0; k<M; k++)
@@ -418,30 +421,3 @@ void P_solve(double** P, double** phi, int M, int N)
         P[M+1][j+1] = P[M][j+1];
     }
 }
-
-    if (firstStep == 0)
-    {
-        double** H_old  = calloc(M, sizeof( double *));
-        for (int k = 0; k<M; k++)
-        {
-            H_old[k] = calloc(N-1,sizeof(double));
-        }
-        AdvectiveY_fun(u_old,v_old,H_old,h,M,N);
-        for (int i = 0; i<M; i++)
-        {
-            for (int j = 0; j<N-1; j++)
-            {
-                sol[i+1][j+1] = v[i+1][j+1] + dt * (-0.5*(3*H_now[i][j]-H_old[i][j]) - dPdy[i][j] + 9.81 * beta*(T[i+1][j+1] - T0) + nu * (d2vdx2[i][j] + d2vdy2[i][j]));
-            }
-        }
-        free(H_old);
-    }
-    else
-    {
-        for (int i = 0; i<M; i++)
-        {
-            for (int j = 0; j<N-1; j++)
-            {
-                sol[i+1][j+1] = v[i+1][j+1] + dt * (-1*H_now[i][j] - dPdy[i][j] + 9.81 * beta*(T[i+1][j+1] - T0) + nu * (d2vdx2[i][j] + d2vdy2[i][j]));
-            }
-        }

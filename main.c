@@ -11,18 +11,18 @@ int main (int argc, char *argv[])
 
     //Partie initialisation
 
-    double h = 1;
+    double h = 0.1;
     double L = 4;
     double H = 1.5*L;
     int M = (int) L/h;
     int N = (int) H/h;
-    double rho_0 = 1E3;   //densité de l'eau
+    double rho_0 = 1;   //densité de l'eau
     double p_ref = 1E5; //[Pa]
-    double p_init = 101325;// Un peu au pif
+    double p_init = p_ref;// Un peu au pif
     double g = 9.81;       //[m/s^2]
     double T_0 = 298.15;   //[K]
     double T_inf = 273.15; //[K]
-    double dt = 0.1;
+    double dt = 0.001;
     double t_tot = 10;
     double nt = t_tot/dt;
     double k = 1;
@@ -99,7 +99,13 @@ int main (int argc, char *argv[])
 
         ustar_Solve(u, v, u_old, v_old, P, ustar, h, dt, nu, M, N, firstStep); //Il y aura 2 if a la place d'un vu que les ifs sont incorporés dans la fonction
         vstar_Solve(u, v, u_old, v_old, P, T, vstar, h, dt, T_0, nu, beta, M, N, firstStep);   //Ça vaut peut etre la peine de juste mettre un if dans la main.
-
+        for(int i = 0; i <M+2; i++)
+        {
+            for(int j = 0; j < N+1; j++)
+            {
+//                printf("%f\n",vstar[i][j]);
+            }
+        }
         T_solve(T, u_old, v_old, u, v, h, dt, q_w, T_inf, h_barre, k, alpha, M, N, firstStep);
 
         u_buffer = u_old;
@@ -112,16 +118,17 @@ int main (int argc, char *argv[])
         v = v_buffer;
 
         SOR(phi, ustar, vstar, tol, 1.97, H, U, L, h, dt, M, N);
-        //
-        // u_Solve(ustar, phi, u, dt, h, M, N);
-        // v_Solve(vstar, phi, v, dt, h, M, N);
-        //
-        // P_solve(P, phi, M, N);
-        //
-        // firstStep = 0;
+
+         u_Solve(ustar, phi, u, dt, h, M, N);
+         v_Solve(vstar, phi, v, dt, h, M, N);
+
+         P_solve(P, phi, M, N);
+
+         firstStep = 0;
 
     }
 
+    fclose(temperature);
     for (int k = 0; k<M+1; k++)
     {
         free(u[k]);

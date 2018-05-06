@@ -116,7 +116,6 @@ void AdvectiveX_fun(double** u, double** v, double** a, double h, int M, int N)
         for (int j=0; j<N; j++)
         {
             Uij[i][j] = 0.5 * (u[i+1][j+1] + u[i][j+1]);//U[0][0] est place en (1,1)
-            //printf("U[%d][%d] = %f \n",i,j,Uij[i][j]);
         }
     }
 
@@ -163,13 +162,12 @@ void AdvectiveY_fun(double** u, double** v, double** b, double h, int M, int N)
         for (int j=0; j<N; j++)
         {
             Uij[i][j] = 0.5 * (u[i][j+2] + u[i][j+1]);//U[0][0] est place en (0.5,1.5)
-//                printf("U[%d][%d] = %f \n",i,j,Uij[i][j]);
         }
     }
 
     for (int i=0; i<M; i++)
     {
-        for (int j=0; j<N+1; j++)
+        for (int j=0; j<N; j++)
         {
             Vij[i][j] = 0.5 * (v[i+1][j+1] + v[i+1][j]); // V[0][0] est place en (1,1)
 
