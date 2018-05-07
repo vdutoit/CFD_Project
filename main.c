@@ -11,7 +11,7 @@ int main (int argc, char *argv[])
 
     //Partie initialisation
 
-    double h = 0.1;
+    double h = 1;
     double L = 4;
     double H = 1.5*L;
     int M = (int) L/h;
@@ -19,7 +19,7 @@ int main (int argc, char *argv[])
     double rho_0 = 1;   //densité de l'eau
     double p_ref = 1E5; //[Pa]
     double p_init = p_ref;// Un peu au pif
-    double g = 9.81;       //[m/s^2]
+    double g = 10;       //[m/s^2]
     double T_0 = 298.15;   //[K]
     double T_inf = 273.15; //[K]
     double dt = 0.001;
@@ -78,7 +78,27 @@ int main (int argc, char *argv[])
         {
             P[i][j] = ((p_init - p_ref) + rho_0*g*(H - j*h))/rho_0;
             T[i][j] = T_0;
+            //phi[i][j] = 0;
         }
+    }
+
+    for (int j = 0; j < N; j++)
+    {
+        P[0][j+1] = P[1][j+1];
+        P[M+1][j+1] = P[M][j+1];
+
+        phi[0][j+1] = phi[1][j+1];
+        phi[M+1][j+1] = phi[M][j+1];
+    }
+
+    for (int i = 0; i < M; i++)
+    {
+        P[i+1][0] = P[i+1][1];
+        P[i+1][N+1] = P[i+1][N];
+
+        phi[i+1][0] = phi[i+1][1];
+        phi[i+1][N+1] = phi[i+1][N];
+
     }
 
     int firstStep = 1;
