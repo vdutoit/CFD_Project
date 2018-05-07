@@ -306,13 +306,14 @@ void SOR(double** phi, double** ustar, double** vstar, double tol, double alpha,
             leftWall = 1;
             for (int i=0; i<M; i++)
             {
-                phiStar[i][j] = 0.25* (-1* pow(h,2)*(dustardx[i][j]+dvstardy[i][j])/dt + phi[i+2][j+1] + (1-leftWall)*phi[i][j+1] + phi[i+1][j+2] + (1-bottomWall)*phi[i+1][j]);
+                phiStar[i][j] = 0.25* (-1* pow(h,2)*(dustardx[i][j]+dvstardy[i][j])/dt + phi[i+2][j+1] + phi[i][j+1] + phi[i+1][j+2] + phi[i+1][j]);
                 //printf("dvstardy = %f\n",phiStar[i][j]);
-                phi[i+1][j+1] = (alpha*phiStar[i][j] + (1-alpha) * phi[i+1][j+1])/(1-0.25*alpha*(bottomWall+leftWall)); //remplacer phistar direct ?
+                phi[i+1][j+1] = (alpha*phiStar[i][j] + (1-alpha) * phi[i+1][j+1]); //remplacer phistar direct ?
                 leftWall = 0;
 
             }
             //cond limite paroies lat
+            phi[0][j+1] = phi[1][j+1];
             phi[M+1][j+1] = phi[M][j+1];
             bottomWall = 0;
         }
@@ -320,6 +321,7 @@ void SOR(double** phi, double** ustar, double** vstar, double tol, double alpha,
         //cond limite paroies horizontales
         for (int i=0; i<M; i++)
         {
+            phi[i+1][0] = phi[i+1][1];
             phi[i+1][N+1] = phi[i+1][N];
         }
         for (int j=0; j<N; j++)
@@ -329,16 +331,18 @@ void SOR(double** phi, double** ustar, double** vstar, double tol, double alpha,
                 d2Tdx2_fun(phi,d2phidx2,h,M,N);
                 d2Tdy2_fun(phi,d2phidy2,h,M,N);
                 R = (d2phidx2[i][j]+d2phidy2[i][j]) - 1/dt*(dustardx[i][j]+dvstardy[i][j]);
-                printf("%f ",phiStar[i][j]-phi[i+1][j+1]);
+                printf("%f ",phi[i+1][j+1]-phiStar[i][j]);
                 sumR += R*R;
             }
             printf("\n");
         }
         error = (dt*H/U)*sqrt(1/(L*H)*sumR*h*h);
         printf("SOR global error = %f\n",error);
+        printf("iter = %d\n",iter);
         //printf("SOR yoobal error = %f\n",alpha);
-        //iter++;
-        //printf("%d\n",iter);
+        iter++;
+
+
     }
 }
 
