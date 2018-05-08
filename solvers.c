@@ -39,7 +39,7 @@ void ustar_Solve(double** u, double** v, double** u_old, double** v_old, double*
     d2udy2_fun(u,d2udy2,h,M,N);
 
     AdvectiveX_fun(u,v,H_now,h,M,N);
-    
+
 
     if (firstStep == 0)
     {
@@ -247,7 +247,9 @@ void T_solve(double** T, double** u_old, double** v_old, double** u_now, double*
     double q_e = 0;
     for (int i=1; i<M+1; i++)
     {
-        q_e = h_barre*((T[i][N+1]-T[i][N])/2 - T_inf);
+        q_e = h_barre*((T[i][N+1]+T[i][N])/2 - T_inf);
+        printf("T: %f\n",(T[i][N+1]+T[i][N])/2);
+        printf("q_e: %f\n",q_e);
         dTdy_e[i-1] = -q_e/k;
     }
 
@@ -339,11 +341,11 @@ void SOR(double** phi, double** ustar, double** vstar, double tol, double alpha,
                 d2Tdy2_fun(phi,d2phidy2,h,M,N);
                 R = (d2phidx2[i][j]+d2phidy2[i][j]) - 1/dt*(dustardx[i][j]+dvstardy[i][j]);
 //                printf("dvstardy = %f\n",dvstardy[i][j]);
-                printf("%f ",dvstardy[i][j]);
+                //printf("%f ",dvstardy[i][j]);
 
                 sumR += R*R;
             }
-            printf("\n");
+            //printf("\n");
 
         }
 

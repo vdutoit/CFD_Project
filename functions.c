@@ -121,15 +121,21 @@ void AdvectiveX_fun(double** u, double** v, double** a, double h, int M, int N)
         }
     }
     printf("checkpoint8\n");
-
+    printf("M,N: %d, %d\n",M,N);
+    int iter = 1;
     for (int i=0; i<M-1; i++)
     {
         for (int j=0; j<N+1; j++)
         {
+            printf("check\n");
+            printf("v[i+2][j]: %f\n", v[i+2][j]);
             Vij[i][j] = 0.5 * (v[i+2][j] + v[i+1][j]); // V[0][0] est place en (1.5,0.5)
+            printf("iter: %d\n", iter);
+            iter++;
 
         }
     }
+
     printf("checkpoint9\n");
 
     for (int i=0; i<M-1; i++)
@@ -139,6 +145,14 @@ void AdvectiveX_fun(double** u, double** v, double** a, double h, int M, int N)
             //a[0][0] est place en (1.5,1)
             a[i][j] = 0.5 *(Uij[i+1][j] * (u[i+2][j+1]-u[i+1][j+1])/h + Uij[i][j] * (u[i+1][j+1]-u[i][j+1])/h) + 0.5 *(Vij[i][j+1] * (u[i+1][j+2]-u[i+1][j+1])/h + Vij[i][j] * (u[i+1][j+1]-u[i+1][j])/h);
         }
+    }
+    for (int k = 0; k<M; k++)
+    {
+        free(Uij[k]);
+    }
+    for (int k = 0; k<M-1; k++)
+    {
+        free(Vij[k]);
     }
 
     free(Uij);

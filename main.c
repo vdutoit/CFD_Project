@@ -12,29 +12,30 @@ int main (int argc, char *argv[])
 
     //Partie initialisation
 
-    double h = 1;
+    double h = 0.25;
     double L = 4;
     double H = 1.5*L;
     int M = (int) L/h;
     int N = (int) H/h;
-    double rho_0 = 1;   //densité de l'eau
+    double rho_0 = 1000;   //densité de l'eau
     double p_ref = 1E5; //[Pa]
-    double p_init = p_ref;// Un peu au pif
+    double p_init = 101325;// Un peu au pif
     double g = 10;       //[m/s^2]
-    double T_0 = 298.15;   //[K]
-    double T_inf = 273.15; //[K]
+    double T_0 = 353.15;   //[K]
+    double T_inf = 298.15; //[K]
     double dt = 0.001;
-    double t_tot = 10;
+    double t_tot = 0.001;
     double nt = t_tot/dt;
     double k = 1;
     double l_0 = (1E-3)*H;
     double h_barre = k/l_0;
-    double deltaT = (T_0 - T_inf)/(5E3);
+    double deltaT = (T_0 - T_inf)/(5E-3);
     double nu = 1E-6;
     double alpha = nu/2;
     double U = sqrt(2E10)*nu/H;
     double beta = pow(U,2)/(g*deltaT*H);
     double q_w = k*deltaT/H;
+    printf("q_w: %f\n",q_w);
     double tol = 1E-3;
 
     FILE *temperature = fopen("temperature.txt", "w");
@@ -118,19 +119,36 @@ int main (int argc, char *argv[])
             fprintf(temperature,"\n");
         }
         printf("checkpoint5\n");
-
+        printf("v: %f\n",v[0][0]);
         ustar_Solve(u, v, u_old, v_old, P, ustar, h, dt, nu, M, N, firstStep); //Il y aura 2 if a la place d'un vu que les ifs sont incorporés dans la fonction
         printf("checkpoint6\n");
         vstar_Solve(u, v, u_old, v_old, P, T, vstar, h, dt, T_0, nu, beta, M, N, firstStep);   //Ça vaut peut etre la peine de juste mettre un if dans la main.
 
-        for(int i = 0; i <M+2; i++)
-        {
-            for(int j = 0; j < N+1; j++)
-            {
-//                printf("%f\n",vstar[i][j]);
-            }
-        }
+//         for(int i = 0; i <M+2; i++)
+//         {
+//             for(int j = 0; j < N+1; j++)
+//             {
+// //                printf("%f\n",vstar[i][j]);
+//             }
+//         }
         T_solve(T, u_old, v_old, u, v, h, dt, q_w, T_inf, h_barre, k, alpha, M, N, firstStep);
+
+        // for(int i = 0; i <M+2; i++)
+        // {
+        //     for(int j = 0; j < N+1; j++)
+        //     {
+        //         v_old[i][j] = v[i][j];
+        //     }
+        // }
+        //
+        // for(int i = 0; i <M+1; i++)
+        // {
+        //     for(int j = 0; j < N+2; j++)
+        //     {
+        //         u_old[i][j] = u[i][j];
+        //     }
+        // }
+
 
         u_buffer = u_old;
         v_buffer = v_old;
@@ -150,10 +168,22 @@ int main (int argc, char *argv[])
          P_solve(P, phi, M, N);
          printf("checkpoint3\n");
 
-         memset(phi, 0, sizeof(phi[0][0]) * (M+2) * (N+2));
-         printf("checkpoint4\n");
+         //memset(phi, 0, sizeof(phi[0][0]) * (M+2) * (N+2));
 
+             for(int n = 0; n < N+2; n++)
+             {
+                 for(int m = 0; m < M+2; m++)
+                 {
+                     phi[m][n] = 0;
+                     printf("%f ", T[m][n]);
+                }
+                printf("\n");
+             }
+
+         printf("checkpoint4\n");
+         printf("firststep = %d\n",firstStep);
          firstStep = 0;
+             printf("time: %f\n", i*dt);
 
     }
 
@@ -183,5 +213,6 @@ int main (int argc, char *argv[])
     free(P);
     free(T);
     free(phi);
+
 
 }
