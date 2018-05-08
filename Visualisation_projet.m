@@ -7,7 +7,7 @@ L = 2;
 H = 1.5*L;
 M = L/h;
 N = H/h;
-[X,Y] = meshgrid(linspace(0,L,M),linspace(0,H,N));
+% [X,Y] = meshgrid(linspace(0,L,M),linspace(0,H,N));
 dt = 0.1;
 t_end = 30;
 nt = t_end/dt;
@@ -18,7 +18,7 @@ fig = figure;
 axis equal;
 hold on;
 for i = 0:nt-1
-    pcolor(X,Y,T(i*N+1:i*N+N,1:M));
+    pcolor(T(i*N+1:i*N+N,1:M));
     shading interp
     drawnow
 end
