@@ -3,6 +3,7 @@
 
 #include<stdio.h>
 #include<stdlib.h>
+#include<string.h>
 #include<math.h>
 #include"functions.h"
 
@@ -116,9 +117,12 @@ int main (int argc, char *argv[])
             }
             fprintf(temperature,"\n");
         }
+        printf("checkpoint5\n");
 
         ustar_Solve(u, v, u_old, v_old, P, ustar, h, dt, nu, M, N, firstStep); //Il y aura 2 if a la place d'un vu que les ifs sont incorporés dans la fonction
+        printf("checkpoint6\n");
         vstar_Solve(u, v, u_old, v_old, P, T, vstar, h, dt, T_0, nu, beta, M, N, firstStep);   //Ça vaut peut etre la peine de juste mettre un if dans la main.
+
         for(int i = 0; i <M+2; i++)
         {
             for(int j = 0; j < N+1; j++)
@@ -138,11 +142,16 @@ int main (int argc, char *argv[])
         v = v_buffer;
 
         SOR(phi, ustar, vstar, tol, 1.97, H, U, L, h, dt, M, N);
-
+        printf("checkpoint1\n");
          u_Solve(ustar, phi, u, dt, h, M, N);
          v_Solve(vstar, phi, v, dt, h, M, N);
+         printf("checkpoint2\n");
 
          P_solve(P, phi, M, N);
+         printf("checkpoint3\n");
+
+         memset(phi, 0, sizeof(phi[0][0]) * (M+2) * (N+2));
+         printf("checkpoint4\n");
 
          firstStep = 0;
 

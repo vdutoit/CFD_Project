@@ -32,11 +32,15 @@ void ustar_Solve(double** u, double** v, double** u_old, double** v_old, double*
     {
         H_now[k] = calloc(N,sizeof(double));
     }
-
+    printf("checkpoint6\n");
     dPdx_fun(P,dPdx,h,M,N);
     d2udx2_fun(u,d2udx2,h,M,N);
+
     d2udy2_fun(u,d2udy2,h,M,N);
+
     AdvectiveX_fun(u,v,H_now,h,M,N);
+    
+
     if (firstStep == 0)
     {
         double** H_old  = calloc(M-1, sizeof( double *));
@@ -56,6 +60,7 @@ void ustar_Solve(double** u, double** v, double** u_old, double** v_old, double*
     }
     else
     {
+
         for (int i = 0; i<M-1; i++)
         {
             for (int j = 0; j<N; j++)
@@ -306,13 +311,15 @@ void SOR(double** phi, double** ustar, double** vstar, double tol, double alpha,
             leftWall = 1;
             for (int i=0; i<M; i++)
             {
-                phiStar[i][j] = 0.25* (-1* pow(h,2)*(dustardx[i][j]+dvstardy[i][j])/dt + phi[i+2][j+1] + phi[i][j+1] + phi[i+1][j+2] + phi[i+1][j]);
-                //printf("dvstardy = %f\n",phiStar[i][j]);
-                phi[i+1][j+1] = (alpha*phiStar[i][j] + (1-alpha) * phi[i+1][j+1]); //remplacer phistar direct ?
+                phiStar[i][j] = 0.25 * (-1* pow(h,2)*(dustardx[i][j]+dvstardy[i][j])/dt + phi[i+2][j+1] + (1-leftWall)*phi[i][j+1] + phi[i+1][j+2] + (1-bottomWall)*phi[i+1][j]);
+                phi[i+1][j+1] = (alpha*phiStar[i][j] + (1-alpha) * phi[i+1][j+1])/(1-0.25*alpha*(bottomWall+leftWall)); //remplacer phistar direct ?
                 leftWall = 0;
+                //printf("%f ",phi[i+1][j+1]);
 
             }
+            //printf("\n");
             //cond limite paroies lat
+            //printf("%f = %f\n",phi[0][j+1],phi[1][j+1]);
             phi[0][j+1] = phi[1][j+1];
             phi[M+1][j+1] = phi[M][j+1];
             bottomWall = 0;
@@ -331,18 +338,20 @@ void SOR(double** phi, double** ustar, double** vstar, double tol, double alpha,
                 d2Tdx2_fun(phi,d2phidx2,h,M,N);
                 d2Tdy2_fun(phi,d2phidy2,h,M,N);
                 R = (d2phidx2[i][j]+d2phidy2[i][j]) - 1/dt*(dustardx[i][j]+dvstardy[i][j]);
-                printf("%f ",phi[i+1][j+1]-phiStar[i][j]);
+//                printf("dvstardy = %f\n",dvstardy[i][j]);
+                printf("%f ",dvstardy[i][j]);
+
                 sumR += R*R;
             }
             printf("\n");
+
         }
+
+        //printf("check: %f\n", 1/(L*H));
         error = (dt*H/U)*sqrt(1/(L*H)*sumR*h*h);
         printf("SOR global error = %f\n",error);
-        printf("iter = %d\n",iter);
-        //printf("SOR yoobal error = %f\n",alpha);
-        iter++;
-
-
+        //iter++;
+        //printf("%d\n",iter);
     }
 }
 

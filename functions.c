@@ -2,6 +2,8 @@
 //MECA2660_PROJECT_2018
 #include<stdio.h>
 #include<math.h>
+#include<string.h>
+#include<stdlib.h>
 #include"functions.h"
 
 //TRIER FONCTIONS DANS PLUSIEURS DOSSIERS + FAIRE HEADER
@@ -99,7 +101,7 @@ void d2Tdy2_fun(double** T, double** sol, double h, int M, int N)
 void AdvectiveX_fun(double** u, double** v, double** a, double h, int M, int N)
 {
     //u est M+1xN+2 , v est M+2xN+1, a est M-1xN avec M et N le nombre de points dans le domaine frontiere comprise
-
+    printf("checkpoint7\n");
     double** Uij = calloc(M, sizeof( double *));
     for (int k = 0; k<M; k++)
     {
@@ -118,6 +120,7 @@ void AdvectiveX_fun(double** u, double** v, double** a, double h, int M, int N)
             Uij[i][j] = 0.5 * (u[i+1][j+1] + u[i][j+1]);//U[0][0] est place en (1,1)
         }
     }
+    printf("checkpoint8\n");
 
     for (int i=0; i<M-1; i++)
     {
@@ -127,6 +130,7 @@ void AdvectiveX_fun(double** u, double** v, double** a, double h, int M, int N)
 
         }
     }
+    printf("checkpoint9\n");
 
     for (int i=0; i<M-1; i++)
     {
