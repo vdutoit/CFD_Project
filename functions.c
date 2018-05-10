@@ -101,7 +101,7 @@ void d2Tdy2_fun(double** T, double** sol, double h, int M, int N)
 void AdvectiveX_fun(double** u, double** v, double** a, double h, int M, int N)
 {
     //u est M+1xN+2 , v est M+2xN+1, a est M-1xN avec M et N le nombre de points dans le domaine frontiere comprise
-    printf("checkpoint7\n");
+//    printf("checkpoint7\n");
     double** Uij = calloc(M, sizeof( double *));
     for (int k = 0; k<M; k++)
     {
@@ -120,23 +120,21 @@ void AdvectiveX_fun(double** u, double** v, double** a, double h, int M, int N)
             Uij[i][j] = 0.5 * (u[i+1][j+1] + u[i][j+1]);//U[0][0] est place en (1,1)
         }
     }
-    printf("checkpoint8\n");
-    printf("M,N: %d, %d\n",M,N);
-    int iter = 1;
+//    printf("checkpoint8\n");
+//    printf("M,N: %d, %d\n",M,N);
+//    int iter = 1;
     for (int i=0; i<M-1; i++)
     {
         for (int j=0; j<N+1; j++)
         {
-            printf("check\n");
-            printf("v[i+2][j]: %f\n", v[i+2][j]);
+//            printf("check\n");
+//            printf("v[i+2][j]: %f\n", v[i+2][j]);
             Vij[i][j] = 0.5 * (v[i+2][j] + v[i+1][j]); // V[0][0] est place en (1.5,0.5)
-            printf("iter: %d\n", iter);
-            iter++;
+//            printf("iter: %d\n", iter);
+//            iter++;
 
         }
     }
-
-    printf("checkpoint9\n");
 
     for (int i=0; i<M-1; i++)
     {
@@ -317,11 +315,59 @@ void dudy_fun(double** u, double** sol, double h, int M, int N)
     }
 }
 
-void getNorm(double** u, double** v, double** sol, double h, int M, int N)
+void Vortex(double** u, double** v, double** Re_hw, double** vortex, double nu, double h, int M, int N)
 {
-    double** Uij = calloc(M+1, sizeof( double *));
-    for (int k = 0; k<M; k++)
+    double dvdx;
+    double dudy;
+    for (int i = 0; i<M-1; i++)
     {
-        Uij[k] = calloc(N-1,sizeof(double));
+        for (int j = 0; j<N-1; j++)
+        {
+            dvdx = (v[i+2][j+1]-v[i+1][j+1])/h;
+            dudy = (u[i+1][j+2]-u[i+1][j+1])/h;
+            vortex[i][j] = dvdx - dudy;
+            Re_hw[i][j] = abs(dvdx-dudy)*h*h/nu;
+        }
     }
+}
+
+void Reynolds(double** u, double** v, double** Re_h, double** norm, double nu, double h, int M, int N)
+{
+    double u_avg;
+    double v_avg;
+    for (int i = 0; i < M; i++)
+    {
+        for (int j = 0; j < N; j++)
+        {
+            u_avg = (u[i][j+1]+u[i+1][j+1])/2;
+            v_avg = (v[i+1][j]+v[i+1][j+1])/2;
+            Re_h[i][j] = (abs(u_avg)+abs(v_avg))*h/nu;
+            norm[i][j] = sqrt(u_avg*u_avg + v_avg*v_avg);
+        }
+    }
+}
+
+void AverageT(double** T, double T_avg, double h, int M, int N)
+{
+    T_avg = 0;
+    for (int i = 0; i<M; i++)
+    {
+        for (int j = 0; j<N; j++)
+        {
+            T_avg += T[i+1][j+1];
+        }
+    }
+    T_avg = T_avg/(M*N);
+}
+
+void T_RMS(double** T, double T_rms, double T_avg, double h, int M, int N)
+{
+    for (int i = 0; i<M; i++)
+    {
+        for (int j = 0; j<N; j++)
+        {
+            T_rms += pow(T[i+1][j+1]-T_avg,2);
+        }
+    }
+    T_rms = sqrt(T_rms/(M*N));
 }
