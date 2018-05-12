@@ -10,26 +10,14 @@ void ustar_Solve(double** u, double** v, double** u_old, double** v_old, double*
     //u est M+1xN+2, a est M-1xN, P est M+2xN+2, sol est M+1xN+2, adv est M-1xN
 
     double** dPdx  = calloc(M-1, sizeof( double *));
-    for (int k = 0; k<M-1; k++)
-    {
-        dPdx[k] = calloc(N,sizeof(double));
-    }
-
     double** d2udx2  = calloc(M-1, sizeof( double *));
-    for (int k = 0; k<M-1; k++)
-    {
-        d2udx2[k] = calloc(N,sizeof(double));
-    }
-
     double** d2udy2  = calloc(M-1, sizeof( double *));
-    for (int k = 0; k<M-1; k++)
-    {
-        d2udy2[k] = calloc(N,sizeof(double));
-    }
-
     double** H_now  = calloc(M-1, sizeof( double *));
     for (int k = 0; k<M-1; k++)
     {
+        dPdx[k] = calloc(N,sizeof(double));
+        d2udx2[k] = calloc(N,sizeof(double));
+        d2udy2[k] = calloc(N,sizeof(double));
         H_now[k] = calloc(N,sizeof(double));
     }
 
@@ -52,6 +40,10 @@ void ustar_Solve(double** u, double** v, double** u_old, double** v_old, double*
             {
                 sol[i+1][j+1] = u[i+1][j+1] + dt * (-0.5*(3*H_now[i][j]-H_old[i][j]) - dPdx[i][j]  + 1/sqrt(Gr) * (d2udx2[i][j] + d2udy2[i][j]));
             }
+        }
+        for (int k = 0; k<M-1; k++)
+        {
+            free(H_old[k]);
         }
         free(H_old);
     }
@@ -91,7 +83,7 @@ void ustar_Solve(double** u, double** v, double** u_old, double** v_old, double*
 void vstar_Solve(double** u, double** v, double** u_old, double** v_old, double** P, double** T, double** sol, double h, double dt, double Gr, int M, int N, int firstStep)
 {
     //v est M+2xN+1, b est MxN-1, P est M+2xN+2, sol est M+2xN+1, adv est MxN-1
-
+//    printf("checkpoint M = %d \n",M);
     double** dPdy  = calloc(M, sizeof( double *));
     double** d2vdx2  = calloc(M, sizeof( double *));
     double** d2vdy2  = calloc(M, sizeof( double *));
@@ -104,20 +96,27 @@ void vstar_Solve(double** u, double** v, double** u_old, double** v_old, double*
         d2vdy2[k] = calloc(N-1,sizeof(double));
         H_now[k] = calloc(N-1,sizeof(double));
     }
-
+//    printf("checkpoint vstar dPdy\n");
     dPdy_fun(P,dPdy,h,M,N);
+//    printf("checkpoint vstar d2vdx2\n");
     d2vdx2_fun(v,d2vdx2,h,M,N);
+//    printf("checkpoint vstar d2vdy2\n");
     d2vdy2_fun(v,d2vdy2,h,M,N);
+//    printf("checkpoint vstar AdvectiveY\n");
     AdvectiveY_fun(u,v,H_now,h,M,N);
-    printf("checkpoint1");
+//    printf("checkpoint vstar 2");
+
     if (firstStep == 0)
     {
+//        printf("checkpoint vstar 2\n");
         double** H_old  = calloc(M, sizeof( double *));
         for (int k = 0; k<M; k++)
         {
             H_old[k] = calloc(N-1,sizeof(double));
         }
+//        printf("checkpoint vstar 3\n");
         AdvectiveY_fun(u_old,v_old,H_old,h,M,N);
+//        printf("checkpoint vstar 4\n");
         for (int i = 0; i<M; i++)
         {
             for (int j = 0; j<N-1; j++)
@@ -125,28 +124,36 @@ void vstar_Solve(double** u, double** v, double** u_old, double** v_old, double*
                 sol[i+1][j+1] = v[i+1][j+1] + dt * (-0.5*(3*H_now[i][j]-H_old[i][j]) - dPdy[i][j] + T[i+1][j+1] + 1/sqrt(Gr) * (d2vdx2[i][j] + d2vdy2[i][j]));
             }
         }
+        for (int k = 0; k<M; k++)
+        {
+            free(H_old[k]);
+        }
         free(H_old);
     }
     else
     {
-        for (int i = 0; i<M; i++)
+        for (int m = 0; m<M; m++)
         {
-            for (int j = 0; j<N-1; j++)
+            for (int n = 0; n<N-1; n++)
             {
-                sol[i+1][j+1] = v[i+1][j+1] + dt * (-1*H_now[i][j] - dPdy[i][j] + T[i+1][j+1] + 1/sqrt(Gr) * (d2vdx2[i][j] + d2vdy2[i][j]));
+//                printf("%d",n);//BIZARRE
+                sol[m+1][n+1] = v[m+1][n+1] + dt * (-1*H_now[m][n] - dPdy[m][n] + T[m+1][n+1] + 1/sqrt(Gr) * (d2vdx2[m][n] + d2vdy2[m][n]));
             }
         }
+//        printf("checkpoint vstar elsefin\n");
     }
 
     //imposer conditions aux limites pour ustar -> 0 sur les paroies laterales (rien changer), u0 en y=0 et u[i][N+1] = u[i][N] sauf en i=0 et i=M
 
     for (int j = 1; j<N; j++)
     {
+//        printf("checkpoint vstar 3\n");
         sol[0][j] = -0.2*(sol[3][j]-5*sol[2][j]+15*sol[1][j]); //no slip condition at left wall
+//        printf("checkpoint vstar 32\n");
         sol[M+1][j] = -0.2*(sol[M+1-3][j]-5*sol[M+1-2][j]+15*sol[M+1-1][j]); //no slip condition at right wall
     }
-
-    for (int k = 0; k<M-1; k++)
+//    printf("checkpoint vstar 4\n");
+    for (int k = 0; k<M; k++)
     {
         free(dPdy[k]);
         free(d2vdx2[k]);
@@ -200,7 +207,9 @@ void T_solve(double** T, double** T_old, double** u_old, double** v_old, double*
             for (int j = 0; j<N; j++)
             {
                 T[i+1][j+1] = T[i+1][j+1] + dt * (-0.5 * (3*H_now[i][j]-H_old[i][j])  + 1/(Pr*sqrt(Gr)) * (d2Tdx2[i][j] + d2Tdy2[i][j]));
+//                printf("pr = %f ",(d2Tdy2[i][j]));
             }
+//            printf("\n");
         }
 
         for (int k = 0; k<M; k++)
@@ -222,7 +231,7 @@ void T_solve(double** T, double** T_old, double** u_old, double** v_old, double*
 
     for (int i = 0; i<M; i++)
     {
-        T[i+1][N+1] = ((1/h - 1e3/2.0)*T[i+1][N] - 5*1e-3)/(1/h + 1e3/2.0);
+        T[i+1][N+1] = ((1/h - 1e3/2.0)*T[i+1][N] - 5)/(1/h + 1e3/2.0);
         T[i+1][0] = T[i+1][1] + h;
     }
     for (int j = 0; j<N; j++)
@@ -246,6 +255,7 @@ void T_solve(double** T, double** T_old, double** u_old, double** v_old, double*
 
 void SOR(double** phi, double** ustar, double** vstar, double tol, double alpha, double h, double dt, int M, int N)
 {
+//    printf("checkpoint calloc\n");
     double** phiStar  = calloc(M, sizeof( double *));
     double** dustardx  = calloc(M, sizeof( double *));
     double** dvstardy  = calloc(M, sizeof( double *));
@@ -264,6 +274,7 @@ void SOR(double** phi, double** ustar, double** vstar, double tol, double alpha,
     double sumR = 0;
     double error = 1;
     int iter = 0;
+//    printf("checkpoint div\n");
     dudx_fun(ustar,dustardx,h,M,N); //Erreur avec vstar!!!!@@@@@ attention!
     dvdy_fun(vstar,dvstardy,h,M,N);
     int leftWall;
@@ -273,6 +284,7 @@ void SOR(double** phi, double** ustar, double** vstar, double tol, double alpha,
     {
         sumR = 0;
         bottomWall = 1;
+//        printf("checkpoint algo\n");
         for (int j=0; j<N; j++)
         {
             leftWall = 1;
@@ -286,19 +298,21 @@ void SOR(double** phi, double** ustar, double** vstar, double tol, double alpha,
             phi[M+1][j+1] = phi[M][j+1];
             bottomWall = 0;
         }
-
+//        printf("checkpoint algofin\n");
         //cond limite paroies horizontales
+//        printf("checkpoint CL\n");
         for (int i=0; i<M; i++)
         {
             phi[i+1][0] = phi[i+1][1];
             phi[i+1][N+1] = phi[i+1][N];
         }
+
+        d2Tdx2_fun(phi,d2phidx2,h,M,N);
+        d2Tdy2_fun(phi,d2phidy2,h,M,N);
         for (int j=0; j<N; j++)
         {
             for (int i=0; i<M; i++)
             {
-                d2Tdx2_fun(phi,d2phidx2,h,M,N);
-                d2Tdy2_fun(phi,d2phidy2,h,M,N);
                 R = (d2phidx2[i][j]+d2phidy2[i][j]) - 1/dt*(dustardx[i][j]+dvstardy[i][j]);
                 sumR += R*R;
             }
@@ -306,6 +320,20 @@ void SOR(double** phi, double** ustar, double** vstar, double tol, double alpha,
         error = (dt)*sqrt(1.5*sumR*h*h);
         printf("SOR global error = %f\n",error);
     }
+
+    for (int k = 0; k<M; k++)
+    {
+        free(phiStar[k]);
+        free(dustardx[k]);
+        free(dvstardy[k]);
+        free(d2phidx2[k]);
+        free(d2phidy2[k]);
+    }
+    free(phiStar);
+    free(dustardx);
+    free(dvstardy);
+    free(d2phidx2);
+    free(d2phidy2);
 }
 
 void u_Solve(double** ustar, double** phi, double** sol, double dt, double h,int M, int N)

@@ -11,14 +11,14 @@ int main (int argc, char *argv[])
 {
 
     //Partie initialisation
+    int M = 64*2*2;
+    int N = 3*M/2;
     double H = 1.0;
-    double L = 2*H/3.0;
-    double h = H/(3.0*1);
-    int M = (int) L/h;
-    int N = (int) H/h;
-    double tol = 1E-3;
-    double dt = 0.01;
-    double t_tot = 2;
+    //double L = 2*H/3.0;
+    double h = H/N;
+    double tol = 1E-6;
+    double dt = 0.1;
+    double t_tot = 0.3;
     double nt = t_tot/dt;
     double Gr = 2.0 * 1e10;
     double Pr = 2.0;
@@ -87,11 +87,11 @@ int main (int argc, char *argv[])
     for (int i = 0; i < nt; i++)
     {
         printf("time = %f \n", i*dt);
-        printf("checkpoint ustarsolve \n");
+//        printf("checkpoint ustarsolve \n");
         ustar_Solve(u, v, u_old, v_old, P, ustar, h, dt, Gr, M, N, firstStep); //Il y aura 2 if a la place d'un vu que les ifs sont incorporés dans la fonction
-        printf("checkpoint vstarsolve \n");
+//        printf("checkpoint vstarsolve \n");
         vstar_Solve(u, v, u_old, v_old, P, T, vstar, h, dt, Gr, M, N, firstStep);   //Ça vaut peut etre la peine de juste mettre un if dans la main.
-        printf("checkpoint Tsolve \n");
+//        printf("checkpoint Tsolve \n");
         T_solve(T, T_old, u_old, v_old, u, v, h, dt, Pr, Gr, M, N, firstStep);
 
         u_buffer = u_old;
@@ -105,7 +105,7 @@ int main (int argc, char *argv[])
         u = u_buffer;
         v = v_buffer;
         T = T_buffer;
-
+//        printf("checkpoint SOR\n");
         SOR(phi, ustar, vstar, tol, 1.97, h, dt, M, N);
         u_Solve(ustar, phi, u, dt, h, M, N);
         v_Solve(vstar, phi, v, dt, h, M, N);
@@ -121,9 +121,9 @@ int main (int argc, char *argv[])
 
         Vortex(u, v, Re_hw, vortex, nu, h, M, N);
         Reynolds(u, v, Re_h, norm, nu, h, M, N);
-        for (int j = 0; j < N+2; j++)
+        for (int j = 1; j < N+1; j++)
         {
-            for (int k = 0; k < M+2; k++)
+            for (int k = 1; k < M+1; k++)
             {
                 fprintf(temperature,"%f ", T[k][j]);
             }
@@ -150,6 +150,18 @@ int main (int argc, char *argv[])
     }
 
     fclose(temperature);
+    fclose(vorticity);
+    fclose(velocity);
+    for (int i = 0; i<M-1; i++)
+    {
+            free(vortex[i]);
+            free(Re_hw[i]);
+    }
+    for (int i = 0; i < M; i++)
+    {
+        free(Re_h[i]);
+        free(norm[i]);
+    }
     for (int k = 0; k<M+1; k++)
     {
         free(u[k]);
@@ -165,7 +177,12 @@ int main (int argc, char *argv[])
         free(P[k]);
         free(T[k]);
         free(phi[k]);
+        free(T_old[k]);
     }
+    free(vortex);
+    free(Re_hw);
+    free(Re_h);
+    free(norm);
     free(u);
     free(u_old);
     free(ustar);

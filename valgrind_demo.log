@@ -1,0 +1,64 @@
+==36157== Memcheck, a memory error detector
+==36157== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==36157== Using Valgrind-3.13.0 and LibVEX; rerun with -h for copyright info
+==36157== Command: ./main
+==36157== Parent PID: 10455
+==36157== 
+==36157== 
+==36157== HEAP SUMMARY:
+==36157==     in use at exit: 25,987 bytes in 184 blocks
+==36157==   total heap usage: 24,424 allocs, 24,240 frees, 74,157,507 bytes allocated
+==36157== 
+==36157== 64 bytes in 1 blocks are definitely lost in loss record 28 of 64
+==36157==    at 0x10000E6E7: calloc (vg_replace_malloc.c:714)
+==36157==    by 0x1004EAC01: _NXMapMember(_NXMapTable*, void const*, void**) (in /usr/lib/libobjc.A.dylib)
+==36157==    by 0x1004EACB9: _mapStrHash(_NXMapTable*, void const*) (in /usr/lib/libobjc.A.dylib)
+==36157==    by 0x1004EACB9: _mapStrHash(_NXMapTable*, void const*) (in /usr/lib/libobjc.A.dylib)
+==36157==    by 0x1004EACB9: _mapStrHash(_NXMapTable*, void const*) (in /usr/lib/libobjc.A.dylib)
+==36157==    by 0x1004E9349: _read_images (in /usr/lib/libobjc.A.dylib)
+==36157==    by 0x1004E78F8: map_images_nolock (in /usr/lib/libobjc.A.dylib)
+==36157==    by 0x1004E754E: map_2_images (in /usr/lib/libobjc.A.dylib)
+==36157==    by 0x7FFF5FC047CF: dyld::notifyBatchPartial(dyld_image_states, bool, char const* (*)(dyld_image_states, unsigned int, dyld_image_info const*)) (in /usr/lib/dyld)
+==36157==    by 0x7FFF5FC04516: dyld::registerImageStateBatchChangeHandler(dyld_image_states, char const* (*)(dyld_image_states, unsigned int, dyld_image_info const*)) (in /usr/lib/dyld)
+==36157==    by 0x10015289D: dyld_register_image_state_change_handler (in /usr/lib/system/libdyld.dylib)
+==36157==    by 0x1004E707B: _objc_init (in /usr/lib/libobjc.A.dylib)
+==36157== 
+==36157== 64 bytes in 1 blocks are definitely lost in loss record 29 of 64
+==36157==    at 0x10000E6E7: calloc (vg_replace_malloc.c:714)
+==36157==    by 0x1004EAC01: _NXMapMember(_NXMapTable*, void const*, void**) (in /usr/lib/libobjc.A.dylib)
+==36157==    by 0x1004EACD0: _mapStrHash(_NXMapTable*, void const*) (in /usr/lib/libobjc.A.dylib)
+==36157==    by 0x1004EACB9: _mapStrHash(_NXMapTable*, void const*) (in /usr/lib/libobjc.A.dylib)
+==36157==    by 0x1004EACB9: _mapStrHash(_NXMapTable*, void const*) (in /usr/lib/libobjc.A.dylib)
+==36157==    by 0x1004EACB9: _mapStrHash(_NXMapTable*, void const*) (in /usr/lib/libobjc.A.dylib)
+==36157==    by 0x1004E9349: _read_images (in /usr/lib/libobjc.A.dylib)
+==36157==    by 0x1004E78F8: map_images_nolock (in /usr/lib/libobjc.A.dylib)
+==36157==    by 0x1004E754E: map_2_images (in /usr/lib/libobjc.A.dylib)
+==36157==    by 0x7FFF5FC047CF: dyld::notifyBatchPartial(dyld_image_states, bool, char const* (*)(dyld_image_states, unsigned int, dyld_image_info const*)) (in /usr/lib/dyld)
+==36157==    by 0x7FFF5FC04516: dyld::registerImageStateBatchChangeHandler(dyld_image_states, char const* (*)(dyld_image_states, unsigned int, dyld_image_info const*)) (in /usr/lib/dyld)
+==36157==    by 0x10015289D: dyld_register_image_state_change_handler (in /usr/lib/system/libdyld.dylib)
+==36157== 
+==36157== 128 bytes in 2 blocks are definitely lost in loss record 37 of 64
+==36157==    at 0x10000E6E7: calloc (vg_replace_malloc.c:714)
+==36157==    by 0x1004EAC01: _NXMapMember(_NXMapTable*, void const*, void**) (in /usr/lib/libobjc.A.dylib)
+==36157==    by 0x1004EACD0: _mapStrHash(_NXMapTable*, void const*) (in /usr/lib/libobjc.A.dylib)
+==36157==    by 0x1004E9349: _read_images (in /usr/lib/libobjc.A.dylib)
+==36157==    by 0x1004E78F8: map_images_nolock (in /usr/lib/libobjc.A.dylib)
+==36157==    by 0x1004E754E: map_2_images (in /usr/lib/libobjc.A.dylib)
+==36157==    by 0x7FFF5FC047CF: dyld::notifyBatchPartial(dyld_image_states, bool, char const* (*)(dyld_image_states, unsigned int, dyld_image_info const*)) (in /usr/lib/dyld)
+==36157==    by 0x7FFF5FC04516: dyld::registerImageStateBatchChangeHandler(dyld_image_states, char const* (*)(dyld_image_states, unsigned int, dyld_image_info const*)) (in /usr/lib/dyld)
+==36157==    by 0x10015289D: dyld_register_image_state_change_handler (in /usr/lib/system/libdyld.dylib)
+==36157==    by 0x1004E707B: _objc_init (in /usr/lib/libobjc.A.dylib)
+==36157==    by 0x1000FACDB: _os_object_init (in /usr/lib/system/libdispatch.dylib)
+==36157==    by 0x1000FACC7: libdispatch_init (in /usr/lib/system/libdispatch.dylib)
+==36157== 
+==36157== LEAK SUMMARY:
+==36157==    definitely lost: 256 bytes in 4 blocks
+==36157==    indirectly lost: 2,784 bytes in 7 blocks
+==36157==      possibly lost: 0 bytes in 0 blocks
+==36157==    still reachable: 148 bytes in 3 blocks
+==36157==         suppressed: 22,799 bytes in 170 blocks
+==36157== Reachable blocks (those to which a pointer was found) are not shown.
+==36157== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==36157== 
+==36157== For counts of detected and suppressed errors, rerun with: -v
+==36157== ERROR SUMMARY: 3 errors from 3 contexts (suppressed: 14 from 14)

@@ -6,4 +6,4 @@ functions.o: functions.c functions.h
 solvers.o: solvers.c functions.h
 					gcc -g -std=c99 -c solvers.c
 clean:
-		rm -f *.o
+		rm -f *.o temperature.txt velocity.txt vorticity.txt

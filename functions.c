@@ -173,9 +173,9 @@ void AdvectiveY_fun(double** u, double** v, double** b, double h, int M, int N)
         Vij[k] = calloc(N,sizeof(double));
     }
 
-    for (int i=0; i<M; i++)
+    for (int i=0; i<M+1; i++)
     {
-        for (int j=0; j<N; j++)
+        for (int j=0; j<N-1; j++)
         {
             Uij[i][j] = 0.5 * (u[i][j+2] + u[i][j+1]);//U[0][0] est place en (0.5,1.5)
         }
@@ -190,6 +190,7 @@ void AdvectiveY_fun(double** u, double** v, double** b, double h, int M, int N)
         }
     }
 
+
     for (int i=0; i<M; i++)
     {
         for (int j=0; j<N-1; j++)
@@ -199,7 +200,14 @@ void AdvectiveY_fun(double** u, double** v, double** b, double h, int M, int N)
                     + 0.5 *(Uij[i+1][j] * (v[i+2][j+1]-v[i+1][j+1])/h + Uij[i][j] * (v[i+1][j+1]-v[i][j+1])/h);
         }
     }
-
+    for (int k = 0; k<M+1; k++)
+    {
+        free(Uij[k]);
+    }
+    for (int k = 0; k<M; k++)
+    {
+        free(Vij[k]);
+    }
     free(Uij);
     free(Vij);
 
@@ -326,7 +334,7 @@ void Vortex(double** u, double** v, double** Re_hw, double** vortex, double nu, 
             dvdx = (v[i+2][j+1]-v[i+1][j+1])/h;
             dudy = (u[i+1][j+2]-u[i+1][j+1])/h;
             vortex[i][j] = dvdx - dudy;
-            Re_hw[i][j] = abs(dvdx-dudy)*h*h/nu;
+            Re_hw[i][j] = fabs(dvdx-dudy)*h*h/nu;
         }
     }
 }
@@ -341,7 +349,7 @@ void Reynolds(double** u, double** v, double** Re_h, double** norm, double nu, d
         {
             u_avg = (u[i][j+1]+u[i+1][j+1])/2;
             v_avg = (v[i+1][j]+v[i+1][j+1])/2;
-            Re_h[i][j] = (abs(u_avg)+abs(v_avg))*h/nu;
+            Re_h[i][j] = (fabs(u_avg)+fabs(v_avg))*h/nu;
             norm[i][j] = sqrt(u_avg*u_avg + v_avg*v_avg);
         }
     }
