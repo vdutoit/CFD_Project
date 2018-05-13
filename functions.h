@@ -17,9 +17,9 @@ void d2Tdy2_fun(double** T, double** sol, double h, int N, int M);
 void AdvectiveT_fun(double** T, double** u, double** v, double** H, double h, int M, int N);
 void dudy_fun(double** u, double** sol, double h, int M, int N);
 void dvdx_fun(double** v, double** sol, double h, int M, int N);
-void Vortex(double** u, double** v, double** Re_hw, double** vortex, double nu, double h, int M, int N);
-void Reynolds(double** u, double** v, double** Re_h, double** norm, double nu, double h, int M, int N);
-void AverageT(double** T, double T_avg, double h, int M, int N);
+double Vortex(double** u, double** v, double** vortex, double Gr, double h, int M, int N, double H);
+double Reynolds(double** u, double** v, double** norm, double Gr, double h, int M, int N, double H);
+double AverageT(double** T, double h, int M, int N);
 void T_RMS(double** T, double T_rms, double T_avg, double h, int M, int N);
 
 //Solvers

@@ -121,7 +121,7 @@ void vstar_Solve(double** u, double** v, double** u_old, double** v_old, double*
         {
             for (int j = 0; j<N-1; j++)
             {
-                sol[i+1][j+1] = v[i+1][j+1] + dt * (-0.5*(3*H_now[i][j]-H_old[i][j]) - dPdy[i][j] + T[i+1][j+1] + 1/sqrt(Gr) * (d2vdx2[i][j] + d2vdy2[i][j]));
+                sol[i+1][j+1] = v[i+1][j+1] + dt * (-0.5*(3*H_now[i][j]-H_old[i][j]) - dPdy[i][j] + (T[i+1][j+2]+T[i+1][j+1])*0.5 + 1/sqrt(Gr) * (d2vdx2[i][j] + d2vdy2[i][j]));
             }
         }
         for (int k = 0; k<M; k++)
@@ -137,7 +137,7 @@ void vstar_Solve(double** u, double** v, double** u_old, double** v_old, double*
             for (int n = 0; n<N-1; n++)
             {
 //                printf("%d",n);//BIZARRE
-                sol[m+1][n+1] = v[m+1][n+1] + dt * (-1*H_now[m][n] - dPdy[m][n] + T[m+1][n+1] + 1/sqrt(Gr) * (d2vdx2[m][n] + d2vdy2[m][n]));
+                sol[m+1][n+1] = v[m+1][n+1] + dt * (-1*H_now[m][n] - dPdy[m][n] + (T[m+1][n+2]+T[m+1][n+1])*0.5 + 1/sqrt(Gr) * (d2vdx2[m][n] + d2vdy2[m][n]));
             }
         }
 //        printf("checkpoint vstar elsefin\n");
@@ -280,7 +280,7 @@ void SOR(double** phi, double** ustar, double** vstar, double tol, double alpha,
     int leftWall;
     int bottomWall;
 
-    while (error > tol && iter < 500)
+    while (error > tol)
     {
         sumR = 0;
         bottomWall = 1;
@@ -318,7 +318,8 @@ void SOR(double** phi, double** ustar, double** vstar, double tol, double alpha,
             }
         }
         error = (dt)*sqrt(1.5*sumR*h*h);
-        printf("SOR global error = %f\n",error);
+        printf("SOR global error = %f, iter: %d\n",error,iter);
+        iter++;
     }
 
     for (int k = 0; k<M; k++)

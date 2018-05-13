@@ -323,10 +323,12 @@ void dudy_fun(double** u, double** sol, double h, int M, int N)
     }
 }
 
-void Vortex(double** u, double** v, double** Re_hw, double** vortex, double nu, double h, int M, int N)
+double Vortex(double** u, double** v, double** vortex, double Gr, double h, int M, int N, double H)
 {
     double dvdx;
     double dudy;
+    double Re_hw;
+    double Re_hw_max = 0;
     for (int i = 0; i<M-1; i++)
     {
         for (int j = 0; j<N-1; j++)
@@ -334,30 +336,41 @@ void Vortex(double** u, double** v, double** Re_hw, double** vortex, double nu, 
             dvdx = (v[i+2][j+1]-v[i+1][j+1])/h;
             dudy = (u[i+1][j+2]-u[i+1][j+1])/h;
             vortex[i][j] = dvdx - dudy;
-            Re_hw[i][j] = fabs(dvdx-dudy)*h*h/nu;
+            Re_hw = sqrt(Gr)*fabs(dvdx-dudy)*pow(h,2)/pow(H,2);
+            if (Re_hw > Re_hw_max)
+            {
+                Re_hw_max = Re_hw;
+            }
         }
     }
+    return Re_hw_max;
 }
 
-void Reynolds(double** u, double** v, double** Re_h, double** norm, double nu, double h, int M, int N)
+double Reynolds(double** u, double** v, double** norm, double Gr, double h, int M, int N, double H)
 {
     double u_avg;
     double v_avg;
+    double Re_h;
+    double Re_h_max = 0;
     for (int i = 0; i < M; i++)
     {
         for (int j = 0; j < N; j++)
         {
             u_avg = (u[i][j+1]+u[i+1][j+1])/2;
             v_avg = (v[i+1][j]+v[i+1][j+1])/2;
-            Re_h[i][j] = (fabs(u_avg)+fabs(v_avg))*h/nu;
+            Re_h = sqrt(Gr)*(fabs(u_avg)+fabs(v_avg))*h/H;
+            if (Re_h > Re_h_max)
+            {
+                Re_h_max = Re_h;
+            }
             norm[i][j] = sqrt(u_avg*u_avg + v_avg*v_avg);
         }
     }
+    return Re_h_max;
 }
-
-void AverageT(double** T, double T_avg, double h, int M, int N)
+double AverageT(double** T, double h, int M, int N)
 {
-    T_avg = 0;
+    double T_avg = 0;
     for (int i = 0; i<M; i++)
     {
         for (int j = 0; j<N; j++)
@@ -366,6 +379,7 @@ void AverageT(double** T, double T_avg, double h, int M, int N)
         }
     }
     T_avg = T_avg/(M*N);
+    return T_avg;
 }
 
 void T_RMS(double** T, double T_rms, double T_avg, double h, int M, int N)

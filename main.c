@@ -11,18 +11,15 @@ int main (int argc, char *argv[])
 {
 
     //Partie initialisation
-    int M = 64*2*2;
+    int M = 64*2;
     int N = 3*M/2;
     double H = 1.0;
     //double L = 2*H/3.0;
     double h = H/N;
-    double tol = 1E-6;
+    double tol = 1E-3;
     double dt = 0.1;
-    double t_tot = 0.3;
-    double nt = t_tot/dt;
     double Gr = 2.0 * 1e10;
     double Pr = 2.0;
-    double nu = 1.0; //A SUPPRIMER
 
     FILE *temperature = fopen("temperature.txt", "w");
     FILE *velocity = fopen("velocity.txt", "w");
@@ -34,19 +31,16 @@ int main (int argc, char *argv[])
         exit(1);
     }
 
-    double** Re_h = calloc(M, sizeof( double *));
     double** norm = calloc(M, sizeof( double *));
     for (int i = 0; i < M; i++)
     {
-        Re_h[i] = calloc(N, sizeof( double));
         norm[i] = calloc(N, sizeof( double));
     }
-    double** Re_hw = calloc(M-1, sizeof( double *));
+
     double** vortex = calloc(M-1, sizeof( double *));
     for (int i = 0; i<M-1; i++)
     {
             vortex[i] = calloc(N-1, sizeof( double));
-            Re_hw[i] = calloc(N-1, sizeof( double));
     }
 
     // Pour u et v, pas de remplissage supplémentaire nécessaire, initiallement à 0;
@@ -84,15 +78,36 @@ int main (int argc, char *argv[])
     double** v_buffer;
     double** T_buffer;
 
-    for (int i = 0; i < nt; i++)
+    double T_avg = 0;
+
+    double Re_hw;
+    double Re_h;
+    int timeCounter = 0;
+    double r = H*dt/(sqrt(Gr)*h);
+
+    while(T_avg < 3e-3 && Re_h < 25 && Re_hw < 40)
     {
-        printf("time = %f \n", i*dt);
+
 //        printf("checkpoint ustarsolve \n");
         ustar_Solve(u, v, u_old, v_old, P, ustar, h, dt, Gr, M, N, firstStep); //Il y aura 2 if a la place d'un vu que les ifs sont incorporés dans la fonction
 //        printf("checkpoint vstarsolve \n");
         vstar_Solve(u, v, u_old, v_old, P, T, vstar, h, dt, Gr, M, N, firstStep);   //Ça vaut peut etre la peine de juste mettre un if dans la main.
 //        printf("checkpoint Tsolve \n");
         T_solve(T, T_old, u_old, v_old, u, v, h, dt, Pr, Gr, M, N, firstStep);
+
+        T_avg = AverageT(T, h, M, N);
+        printf("T_avg: %f\n",T_avg);
+        printf("T matrix:\n");
+        for (int j = 1; j < N+1; j++)
+        {
+            for (int k = 1; k < M+1; k++)
+            {
+                fprintf(temperature,"%f ", T[k][j]);
+                //printf("%f ", T[k][j]);
+            }
+            fprintf(temperature,"\n");
+            //printf("\n");
+        }
 
         u_buffer = u_old;
         v_buffer = v_old;
@@ -119,16 +134,14 @@ int main (int argc, char *argv[])
             }
         }
 
-        Vortex(u, v, Re_hw, vortex, nu, h, M, N);
-        Reynolds(u, v, Re_h, norm, nu, h, M, N);
-        for (int j = 1; j < N+1; j++)
-        {
-            for (int k = 1; k < M+1; k++)
-            {
-                fprintf(temperature,"%f ", T[k][j]);
-            }
-            fprintf(temperature,"\n");
-        }
+        Re_hw = Vortex(u, v, vortex, Gr, h, M, N, H);
+        Re_h = Reynolds(u, v, norm, Gr, h, M, N, H);
+
+        printf("time = %f \n", (timeCounter+1)*dt);
+        printf("Re_hw (<40): %f, Re_h (<25): %f\n",Re_hw,Re_h);
+        printf("CFL : %f\n",r*Re_h);
+        timeCounter++;
+
         for (int i = 0; i<M-1; i++)
         {
             for (int j = 0; j<N-1; j++)
@@ -146,7 +159,10 @@ int main (int argc, char *argv[])
             fprintf(velocity,"\n");
         }
 
+
         firstStep = 0;
+
+
     }
 
     fclose(temperature);
@@ -154,12 +170,10 @@ int main (int argc, char *argv[])
     fclose(velocity);
     for (int i = 0; i<M-1; i++)
     {
-            free(vortex[i]);
-            free(Re_hw[i]);
+        free(vortex[i]);
     }
     for (int i = 0; i < M; i++)
     {
-        free(Re_h[i]);
         free(norm[i]);
     }
     for (int k = 0; k<M+1; k++)
@@ -180,8 +194,6 @@ int main (int argc, char *argv[])
         free(T_old[k]);
     }
     free(vortex);
-    free(Re_hw);
-    free(Re_h);
     free(norm);
     free(u);
     free(u_old);
